@@ -1,0 +1,53 @@
+variables:
+  SERVICE_PORT: 8080
+  REGISTRY_URL: "751503455312.dkr.ecr.us-west-2.amazonaws.com/pgnonprod"
+  SONAR_URL: "http://pg-sonar-altimetrik-com-82028342.us-west-2.elb.amazonaws.com"
+  SONAR_LOGIN: "cc3fc35cad01a325d1b3904bcf3aa38b153fa7f1"
+  EKS_HOST_NAME: "pgtest.altimetrik.com"
+  APP_URL: "https://$EKS_HOST_NAME/$RELEASE_NAME"
+  
+stages:
+  - Build
+  - Test
+  - ReleaseCleanup
+  - ReleaseDeploy
+  - Validation
+
+Build:
+  stage: Build
+  script:
+  - sed -i s+#APP_URL#+$APP_URL+g ./src/main/resources/application.properties
+  - sed -i s+#RELEASE_NAME#+$RELEASE_NAME+g ./src/main/resources/application.properties
+  - mvn clean install
+  - $(aws ecr get-login --no-include-email --region us-west-2)
+  - docker build -t $REGISTRY_URL:$CI_PIPELINE_ID .
+  - docker push $REGISTRY_URL:$CI_PIPELINE_ID
+  
+sonar:
+    stage: Test
+    script:
+    - mvn --batch-mode verify sonar:sonar -Dsonar.exclusions="pom.xml" -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN
+  
+ReleaseCleanup:
+   stage: ReleaseCleanup
+   script: 
+   -  cd ./helm && /sbin/helm delete --purge $RELEASE_NAME && exit 0
+   allow_failure: true
+
+ReleaseDeploy:
+   stage: ReleaseDeploy
+   script:
+   - sed -i s+#REGISTRY_URL#+$REGISTRY_URL+g ./helm/service/values.yaml
+   - sed -i s+#BUILD_ID#+$CI_PIPELINE_ID+g ./helm/service/values.yaml 
+   - sed -i s+#SERVICE_PORT#+$SERVICE_PORT+g ./helm/service/values.yaml
+   - sed -i s+#RELEASE_NAME#+$RELEASE_NAME+g ./helm/service/values.yaml ./helm/service/Chart.yaml ./helm/service/templates/service.yaml ./helm/service/templates/ingress.yaml ./helm/service/templates/deployment.yaml ./helm/service/templates/_helpers.tpl ./helm/service/templates/tests/test-connection.yaml
+   - sed -i s+#EKS_HOST_NAME#+$EKS_HOST_NAME+g ./helm/service/values.yaml
+   - kubectl config use-context arn:aws:eks:us-west-2:751503455312:cluster/pg-eks
+   - cd ./helm && /sbin/helm install service --name $RELEASE_NAME
+
+Validation:
+    stage: Validation
+    script:
+    - sleep 45
+    - if [ `curl -s -o /dev/null -I -w "%{http_code}" $APP_URL` = "200" ]; then exit 0; else exit 1; fi
+    allow_failure: false

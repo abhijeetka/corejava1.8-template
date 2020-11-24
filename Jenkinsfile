@@ -81,22 +81,25 @@ pipeline {
         }
       }
       steps {
-        echo "echoed folder--- $foldername"
-        echo "echoed BUILD_TAG--- $BUILD_TAG"
-        echo "echoed PROMOTE_TAG--- $PROMOTE_TAG"
+        script {
+          echo "echoed folder--- $foldername"
+          echo "echoed BUILD_TAG--- $BUILD_TAG"
+          echo "echoed PROMOTE_TAG--- $PROMOTE_TAG"
 
-        sh 'mvn clean install -Dmaven.test.skip=true'
-        if (env.ARTIFACTORY == 'ECR') {
-          sh 'eval $(aws ecr get-login --no-include-email | sed \'s|https://||\')'
-        }
-        if (env.ARTIFACTORY == 'JFROG') {
-           sh '''
-           docker login -u "$USER_CREDENTIALS_USR" -p "$USER_CREDENTIALS_PSW" "$REGISTRY_URL"
-           '''
+          sh 'mvn clean install -Dmaven.test.skip=true'
+          if (env.ARTIFACTORY == 'ECR') {
+            sh 'eval $(aws ecr get-login --no-include-email | sed \'s|https://||\')'
+          }
+          if (env.ARTIFACTORY == 'JFROG') {
+             sh '''
+             docker login -u "$USER_CREDENTIALS_USR" -p "$USER_CREDENTIALS_PSW" "$REGISTRY_URL"
+             '''
+          }
+
+          sh 'docker build -t "$REGISTRY_URL:$BUILD_TAG" -t "$REGISTRY_URL:latest" .'
+          sh 'docker push "$REGISTRY_URL"'
         }
 
-        sh 'docker build -t "$REGISTRY_URL:$BUILD_TAG" -t "$REGISTRY_URL:latest" .'
-        sh 'docker push "$REGISTRY_URL"'
       }
     }
 
@@ -119,16 +122,20 @@ pipeline {
             sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker push "$REGISTRY_URL:$PROMOTE_TAG""'
           }
         }
-        if (env.ARTIFACTORY == 'ECR') {
-          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "`aws ecr get-login --no-include-email --region us-east-1`"'
+
+        script {
+          if (env.ARTIFACTORY == 'ECR') {
+            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "`aws ecr get-login --no-include-email --region us-east-1`"'
+          }
+          if (env.ARTIFACTORY == 'JFROG') {
+            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USER_CREDENTIALS_USR" -p "$USER_CREDENTIALS_PSW" "$REGISTRY_URL""'
+          }
+          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "sleep 5s"'
+          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker pull "$REGISTRY_URL:$BUILD_TAG""'
+          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker stop ${JOB_BASE_NAME} || true && docker rm ${JOB_BASE_NAME} || true"'
+          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker run -d --name ${JOB_BASE_NAME} -p $SERVICE_PORT:$SERVICE_PORT $REGISTRY_URL:$BUILD_TAG"'
+
         }
-        if (env.ARTIFACTORY == 'JFROG') {
-          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USER_CREDENTIALS_USR" -p "$USER_CREDENTIALS_PSW" "$REGISTRY_URL""'
-        }
-        sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "sleep 5s"'
-        sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker pull "$REGISTRY_URL:$BUILD_TAG""'
-        sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker stop ${JOB_BASE_NAME} || true && docker rm ${JOB_BASE_NAME} || true"'
-        sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker run -d --name ${JOB_BASE_NAME} -p $SERVICE_PORT:$SERVICE_PORT $REGISTRY_URL:$BUILD_TAG"'
 
         script {
           if (env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK') {

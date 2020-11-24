@@ -172,9 +172,11 @@ pipeline {
                 kubectl create ns "$namespace_name" || true
                 helm upgrade --install $RELEASE_NAME -n "$namespace_name" helm_chart --set image.repository="$REGISTRY_URL" --set image.tag="$BUILD_TAG" --set service.internalport="$SERVICE_PORT"
                 sleep 10
-                url=`kubectl get svc -n "$namespace_name" | grep "$RELEASE_NAME-$service" | awk '{print $4}'`
-                echo "#&&# $url #&&#"
               '''
+              script {
+                def url = sh (returnStdout: true, script: '''kubectl get svc -n "$namespace_name" | grep "$RELEASE_NAME-$service" | awk '{print $4}' ''').trim()
+                print("##\$@\$ $url ##\$@\$")
+              }
         }
 
 

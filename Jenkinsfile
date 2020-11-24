@@ -27,6 +27,24 @@ pipeline {
   }
 
   stages {
+  stage('init') {
+     steps {
+         script {
+
+           def job_name = "$env.JOB_NAME"
+           print(job_name)
+           def values = job_name.split('/')
+           namespace = values[0].replaceAll("[^a-zA-Z0-9]+","").toLowerCase().take(50)
+           service = values[2].replaceAll("[^a-zA-Z0-9]+","").toLowerCase().take(50)
+           print(namespace)
+           print(service)
+           env.namespace_name=namespace
+           env.service=service
+
+
+         }
+       }
+     }
     stage('Unit Tests') {
         agent { label 'deployer' }
 

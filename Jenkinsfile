@@ -171,6 +171,16 @@ pipeline {
             '''
           }
         }
+        script {
+          if (env.ARTIFACTORY == 'JFROG') {
+              withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG'), usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                sh '''
+                  kubectl create ns "$namespace_name" || true
+                  kubectl -n "$namespace_name" create secret docker-registry regcred --docker-server="$REGISTRY_URL" --docker-username="$USERNAME" --docker-password="$PASSWORD" || true
+                '''
+            }
+          }
+        }
 
         withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG')]) {
               sh '''

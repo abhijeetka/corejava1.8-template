@@ -4,6 +4,7 @@ image:
   repository: REGISTRY_URL
   tag: BUILD_ID
   pullPolicy: IfNotPresent
+  registrySecret: REGISTRY_SECRET_ID
 
 nameOverride: #SERVICE_NAME#
 fullnameOverride: ""

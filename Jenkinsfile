@@ -184,7 +184,7 @@ pipeline {
               '''
               script {
                 def url = sh (returnStdout: true, script: '''kubectl get svc -n "$namespace_name" | grep "$RELEASE_NAME-$service" | awk '{print $4}' ''').trim()
-                print("##\$@\$ $url ##\$@\$")
+                print("##\$@\$ http://$url ##\$@\$")
               }
         }
 

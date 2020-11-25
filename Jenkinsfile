@@ -23,7 +23,7 @@ pipeline {
     PROMOTE_SOURCE = "${JOB_BASE_NAME}-${foldername}-latest"
     CHROME_BIN = "/usr/bin/google-chrome"
     ARTIFACTORY = "${ARTIFACTORY}"
-    USER_CREDENTIALS = credentials("${ARTIFACTORY_CREDENTIAL_ID}")
+    ARTIFACTORY_CREDENTIALS = "${ARTIFACTORY_CREDENTIAL_ID}"
   }
 
   stages {
@@ -91,9 +91,9 @@ pipeline {
             sh 'eval $(aws ecr get-login --no-include-email | sed \'s|https://||\')'
           }
           if (env.ARTIFACTORY == 'JFROG') {
-             sh '''
-             docker login -u "$USER_CREDENTIALS_USR" -p "$USER_CREDENTIALS_PSW" "$REGISTRY_URL"
-             '''
+              withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                  sh 'docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL"'
+              }
           }
 
           sh 'docker build -t "$REGISTRY_URL:$BUILD_TAG" -t "$REGISTRY_URL:latest" .'
@@ -128,7 +128,9 @@ pipeline {
             sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "`aws ecr get-login --no-include-email --region us-east-1`"'
           }
           if (env.ARTIFACTORY == 'JFROG') {
-            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USER_CREDENTIALS_USR" -p "$USER_CREDENTIALS_PSW" "$REGISTRY_URL""'
+            withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL""'
+            }
           }
           sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "sleep 5s"'
           sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker pull "$REGISTRY_URL:$BUILD_TAG""'

@@ -106,127 +106,88 @@ pipeline {
     stage('Deploy') {
       when {
         expression {
-          env.DEPLOYMENT_TYPE == 'EC2' && (env.ACTION == 'DEPLOY' || env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK')
+          env.ACTION == 'DEPLOY' || env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK'
         }
       }
 
       steps {
-        echo "echoed folder--- $foldername"
-        echo "echoed BUILD_TAG--- $BUILD_TAG"
-        echo "echoed PROMOTE_TAG--- $PROMOTE_TAG"
-        echo "echoed PROMOTE_SOURCE--- $PROMOTE_SOURCE"
         script {
-          if (env.ACTION == 'PROMOTE') {
-            echo "-------------------------------------- inside promote condition -------------------------------"
-            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker image tag "$REGISTRY_URL:$PROMOTE_SOURCE" "$REGISTRY_URL:$PROMOTE_TAG""'
-            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker push "$REGISTRY_URL:$PROMOTE_TAG""'
-          }
-        }
-
-        script {
-          if (env.ARTIFACTORY == 'ECR') {
-            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "`aws ecr get-login --no-include-email --region us-east-1`"'
-          }
-          if (env.ARTIFACTORY == 'JFROG') {
-            withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL""'
+          echo "echoed folder--- $foldername"
+          echo "echoed BUILD_TAG--- $BUILD_TAG"
+          echo "echoed PROMOTE_TAG--- $PROMOTE_TAG"
+          echo "echoed PROMOTE_SOURCE--- $PROMOTE_SOURCE"
+          if (env.DEPLOYMENT_TYPE == 'EC2') {
+            if (env.ACTION == 'PROMOTE') {
+              echo "-------------------------------------- inside promote condition -------------------------------"
+              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker image tag "$REGISTRY_URL:$PROMOTE_SOURCE" "$REGISTRY_URL:$PROMOTE_TAG""'
+              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker push "$REGISTRY_URL:$PROMOTE_TAG""'
             }
-          }
-          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "sleep 5s"'
-          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker pull "$REGISTRY_URL:$BUILD_TAG""'
-          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker stop ${JOB_BASE_NAME} || true && docker rm ${JOB_BASE_NAME} || true"'
-          sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker run -d --name ${JOB_BASE_NAME} -p $SERVICE_PORT:$SERVICE_PORT $REGISTRY_URL:$BUILD_TAG"'
-
-        }
-
-        script {
-          if (env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK') {
-            echo "-------------------------------------- inside promote/rollback condition -------------------------------"
-            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker image tag "$REGISTRY_URL:$BUILD_TAG" "$REGISTRY_URL:$PROMOTE_SOURCE""'
-            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker push "$REGISTRY_URL:$PROMOTE_SOURCE""'
-          }
-        }
-      }
-    }
-    stage('Deploy-To-Kube') {
-      when {
-        expression {
-          env.DEPLOYMENT_TYPE == 'KUBERNETES' && (env.ACTION == 'DEPLOY' || env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK')
-        }
-      }
-
-      steps {
-
-        echo "echoed folder--- $foldername"
-        echo "echoed BUILD_TAG--- $BUILD_TAG"
-        echo "echoed PROMOTE_TAG--- $PROMOTE_TAG"
-        echo "echoed PROMOTE_SOURCE--- $PROMOTE_SOURCE"
-        script {
-          if (env.ACTION == 'PROMOTE') {
-            echo "-------------------------------------- inside promote condition -------------------------------"
-            sh '''
-              docker pull "$REGISTRY_URL:$PROMOTE_SOURCE"
-              docker image tag "$REGISTRY_URL:$PROMOTE_SOURCE" "$REGISTRY_URL:$PROMOTE_TAG"
-              docker push "$REGISTRY_URL:$PROMOTE_TAG"
-            '''
-          }
-        }
-        script {
-          if (env.ARTIFACTORY == 'JFROG') {
-              withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG'), usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                sh '''
-                  kubectl create ns "$namespace_name" || true
-                  kubectl -n "$namespace_name" create secret docker-registry regcred --docker-server="$REGISTRY_URL" --docker-username="$USERNAME" --docker-password="$PASSWORD" || true
-                '''
+            if (env.ARTIFACTORY == 'ECR') {
+              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "`aws ecr get-login --no-include-email --region us-east-1`"'
             }
-          }
-        }
-
-        withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG')]) {
-              sh '''
-                rm -rf kube
-                mkdir -p kube
-                cp "$KUBECONFIG" kube
-                sed -i s+#SERVICE_NAME#+"$service"+g ./helm_chart/values.yaml ./helm_chart/Chart.yaml
-                kubectl create ns "$namespace_name" || true
-                helm upgrade --install $RELEASE_NAME -n "$namespace_name" helm_chart --set image.repository="$REGISTRY_URL" --set image.tag="$BUILD_TAG" --set service.internalport="$SERVICE_PORT"
-                sleep 10
-              '''
-              script {
-                def url = sh (returnStdout: true, script: '''kubectl get svc -n "$namespace_name" | grep "$RELEASE_NAME-$service" | awk '{print $4}' ''').trim()
-                print("##\$@\$ http://$url ##\$@\$")
+            if (env.ARTIFACTORY == 'JFROG') {
+              withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                  sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL""'
               }
-        }
+            }
 
+            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "sleep 5s"'
+            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker pull "$REGISTRY_URL:$BUILD_TAG""'
+            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker stop ${JOB_BASE_NAME} || true && docker rm ${JOB_BASE_NAME} || true"'
+            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker run -d --name ${JOB_BASE_NAME} -p $SERVICE_PORT:$SERVICE_PORT $REGISTRY_URL:$BUILD_TAG"'
 
-        script {
-          if (env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK') {
-            echo "-------------------------------------- inside rollback condition -------------------------------"
-            sh '''
-              docker image tag "$REGISTRY_URL:$BUILD_TAG" "$REGISTRY_URL:$PROMOTE_SOURCE"
-              docker push "$REGISTRY_URL:$PROMOTE_SOURCE"
-            '''
+            if (env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK') {
+              echo "-------------------------------------- inside promote/rollback condition -------------------------------"
+              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker image tag "$REGISTRY_URL:$BUILD_TAG" "$REGISTRY_URL:$PROMOTE_SOURCE""'
+              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker push "$REGISTRY_URL:$PROMOTE_SOURCE""'
+            }
 
+          }
+          if (env.DEPLOYMENT_TYPE == 'KUBERNETES') {
+            if (env.ACTION == 'PROMOTE') {
+              echo "-------------------------------------- inside promote condition -------------------------------"
+              sh '''
+                docker pull "$REGISTRY_URL:$PROMOTE_SOURCE"
+                docker image tag "$REGISTRY_URL:$PROMOTE_SOURCE" "$REGISTRY_URL:$PROMOTE_TAG"
+                docker push "$REGISTRY_URL:$PROMOTE_TAG"
+              '''
+            }
+            if (env.ARTIFACTORY == 'JFROG') {
+                withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG'), usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                  sh '''
+                    kubectl create ns "$namespace_name" || true
+                    kubectl -n "$namespace_name" create secret docker-registry regcred --docker-server="$REGISTRY_URL" --docker-username="$USERNAME" --docker-password="$PASSWORD" || true
+                  '''
+              }
+            }
+            withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG')]) {
+                  sh '''
+                    rm -rf kube
+                    mkdir -p kube
+                    cp "$KUBECONFIG" kube
+                    sed -i s+#SERVICE_NAME#+"$service"+g ./helm_chart/values.yaml ./helm_chart/Chart.yaml
+                    kubectl create ns "$namespace_name" || true
+                    helm upgrade --install $RELEASE_NAME -n "$namespace_name" helm_chart --set image.repository="$REGISTRY_URL" --set image.tag="$BUILD_TAG" --set image.registrySecret="regcred"  --set service.internalport="$SERVICE_PORT"
+                    sleep 10
+                  '''
+                  script {
+                    def url = sh (returnStdout: true, script: '''kubectl get svc -n "$namespace_name" | grep "$RELEASE_NAME-$service" | awk '{print $4}' ''').trim()
+                    print("##\$@\$ http://$url ##\$@\$")
+                  }
+            }
+            if (env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK') {
+              echo "-------------------------------------- inside rollback condition -------------------------------"
+              sh '''
+                docker image tag "$REGISTRY_URL:$BUILD_TAG" "$REGISTRY_URL:$PROMOTE_SOURCE"
+                docker push "$REGISTRY_URL:$PROMOTE_SOURCE"
+              '''
+
+            }
           }
         }
       }
     }
 
-    stage('Delete-helm-Deployment') {
-      when {
-        expression {
-          env.DEPLOYMENT_TYPE == 'KUBERNETES' && env.ACTION == 'DESTROY'
-        }
-      }
-      steps {
-        withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG')]) {
-              sh '''
-                helm uninstall $RELEASE_NAME -n "$namespace_name"
-              '''
-        }
-
-      }
-    }
     stage('Destroy') {
       when {
         expression {
@@ -234,9 +195,19 @@ pipeline {
         }
       }
       steps {
-        sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker stop ${JOB_BASE_NAME} || true && docker rm ${JOB_BASE_NAME} || true"'
+        script {
+          if (env.DEPLOYMENT_TYPE == 'EC2') {
+            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker stop ${JOB_BASE_NAME} || true && docker rm ${JOB_BASE_NAME} || true"'
+          }
+          if (env.DEPLOYMENT_TYPE == 'KUBERNETES') {
+            withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG')]) {
+                  sh '''
+                    helm uninstall $RELEASE_NAME -n "$namespace_name"
+                  '''
+            }
+          }
+        }
       }
     }
-
   }
 }

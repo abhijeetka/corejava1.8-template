@@ -16,13 +16,13 @@ pipeline {
     PROMOTE_STAGE = "${PROMOTE_STAGE}"
     BUILD_VERSION = "${BUILD_VERSION}"
     foldername = getFolderName()
-    DEPLOYMENT_TYPE = "${DEPLOYMENT_TYPE}"
+    DEPLOYMENT_TYPE = "${DEPLOYMENT_TYPE == null? "EC2":DEPLOYMENT_TYPE}"
     KUBE_SECRET = "${KUBE_SECRET}"
     BUILD_TAG = "${JOB_BASE_NAME}-${env.ACTION == "PROMOTE"? env.PROMOTE_STAGE: env.foldername}-${BUILD_VERSION}"
     PROMOTE_TAG = "${JOB_BASE_NAME}-${foldername}-${PROMOTE_ID}"
     PROMOTE_SOURCE = "${JOB_BASE_NAME}-${foldername}-latest"
     CHROME_BIN = "/usr/bin/google-chrome"
-    ARTIFACTORY = "${ARTIFACTORY}"
+    ARTIFACTORY = "${ARTIFACTORY == null? "ECR":ARTIFACTORY}"
     ARTIFACTORY_CREDENTIALS = "${ARTIFACTORY_CREDENTIAL_ID}"
   }
 

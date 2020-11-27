@@ -67,7 +67,7 @@ pipeline {
       steps {
 
         withSonarQubeEnv('pg-sonar') {
-            sh "mvn --batch-mode -V -U -e org.sonarsource.scanner.maven:sonar-maven-plugin:3.5.0.1254:sonar -Dsonar.java.binaries='.' -Dsonar.exclusions='pom.xml, target/**/*' -Dsonar.projectKey=$RELEASE_NAME -Dsonar.projectName=$RELEASE_NAME"
+            sh "mvn --batch-mode -V -U -e org.sonarsource.scanner.maven:sonar-maven-plugin:3.5.0.1254:sonar -Dsonar.java.binaries='.' -Dsonar.exclusions='pom.xml, target/**/*' -Dsonar.projectKey=$service -Dsonar.projectName=$service"
 
         }
       }

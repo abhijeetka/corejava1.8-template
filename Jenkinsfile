@@ -16,35 +16,76 @@ pipeline {
     PROMOTE_STAGE = "${PROMOTE_STAGE}"
     BUILD_VERSION = "${BUILD_VERSION}"
     foldername = getFolderName()
-    DEPLOYMENT_TYPE = "${DEPLOYMENT_TYPE == null? "EC2":DEPLOYMENT_TYPE}"
+    DEPLOYMENT_TYPE = "${DEPLOYMENT_TYPE == ""? "EC2":DEPLOYMENT_TYPE}"
     KUBE_SECRET = "${KUBE_SECRET}"
     BUILD_TAG = "${JOB_BASE_NAME}-${env.ACTION == "PROMOTE"? env.PROMOTE_STAGE: env.foldername}-${BUILD_VERSION}"
     PROMOTE_TAG = "${JOB_BASE_NAME}-${foldername}-${PROMOTE_ID}"
     PROMOTE_SOURCE = "${JOB_BASE_NAME}-${foldername}-latest"
     CHROME_BIN = "/usr/bin/google-chrome"
-    ARTIFACTORY = "${ARTIFACTORY == null? "ECR":ARTIFACTORY}"
+    ARTIFACTORY = "${ARTIFACTORY == ""? "ECR":ARTIFACTORY}"
     ARTIFACTORY_CREDENTIALS = "${ARTIFACTORY_CREDENTIAL_ID}"
   }
 
   stages {
-  stage('init') {
-     steps {
-         script {
+    stage('init') {
+      steps {
+        script {
 
-           def job_name = "$env.JOB_NAME"
-           print(job_name)
-           def values = job_name.split('/')
-           namespace = values[0].replaceAll("[^a-zA-Z0-9]+","").toLowerCase().take(50)
-           service = values[2].replaceAll("[^a-zA-Z0-9]+","").toLowerCase().take(50)
-           print(namespace)
-           print(service)
-           env.namespace_name=namespace
-           env.service=service
+          def job_name = "$env.JOB_NAME"
+          print(job_name)
+          def values = job_name.split('/')
+          namespace = values[0].replaceAll("[^a-zA-Z0-9]+","").toLowerCase().take(50)
+          service = values[2].replaceAll("[^a-zA-Z0-9]+","").toLowerCase().take(50)
+          print(namespace)
+          print(service)
+          env.namespace_name=namespace
+          env.service=service
+          if (env.ARTIFACTORY == "ECR") {
+
+            def url_string = "$REGISTRY_URL"
+            url = url_string.split('\\.')
+            env.AWS_ACCOUNT_NUMBER = url[0]
+            echo "$AWS_ACCOUNT_NUMBER"
+
+            if (env.ARTIFACTORY_CREDENTIALS != null) {
+                  withCredentials([string(credentialsId: "$ARTIFACTORY_CREDENTIALS", variable: 'awskey')]) {
+                    script {
+
+                            def string = "$awskey"
+                            def data = string.split(',')
+                            env.aws_region = data[0]
+                            env.aws_access_key = data[1]
+                            env.aws_secret_key = data[2]
+                            env.aws_role_arn = data[3]
+                            env.aws_external_id = data[4]
+
+                      }
+                    }
+                  if (env.aws_role_arn != 'null') {
+                    env.sts_credentails = sh (returnStdout: true, script: '''
+                                              set +x
+                                              export AWS_ACCESS_KEY_ID=$aws_access_key
+                                              export AWS_SECRET_ACCESS_KEY=$aws_secret_key
+                                              aws sts assume-role --role-arn $aws_role_arn --role-session-name tests --external-id $aws_external_id | jq -r .Credentials
+                                              set -x
+                                               ''').trim()
+                    env.AWS_ACCESS_KEY_ID = sh (returnStdout: true, script: ''' echo ${sts_credentails} | jq -r .AccessKeyId ''').trim()
+                    env.AWS_SECRET_ACCESS_KEY = sh (returnStdout: true, script: ''' echo ${sts_credentails} | jq -r .SecretAccessKey ''').trim()
+                    env.AWS_SESSION_TOKEN = sh (returnStdout: true, script: ''' echo ${sts_credentails} | jq -r .SessionToken ''').trim()
 
 
-         }
-       }
-     }
+                  } else {
+                    env.AWS_ACCESS_KEY_ID = "$aws_access_key"
+                    env.AWS_SECRET_ACCESS_KEY  = "$aws_secret_key"
+                  }
+              } else {
+                env.AWS_ACCESS_KEY_ID = ""
+                env.AWS_SECRET_ACCESS_KEY  = ""
+              }
+          }
+        }
+      }
+    }
     stage('Unit Tests') {
         agent { label 'deployer' }
 
@@ -88,7 +129,7 @@ pipeline {
 
           sh 'mvn clean install -Dmaven.test.skip=true'
           if (env.ARTIFACTORY == 'ECR') {
-            sh 'eval $(aws ecr get-login --no-include-email | sed \'s|https://||\')'
+            sh 'set +x; eval $(aws ecr get-login --no-include-email --registry-ids "$AWS_ACCOUNT_NUMBER" | sed \'s|https://||\') ;set -x'
           }
           if (env.ARTIFACTORY == 'JFROG') {
               withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
@@ -117,18 +158,19 @@ pipeline {
           echo "echoed PROMOTE_TAG--- $PROMOTE_TAG"
           echo "echoed PROMOTE_SOURCE--- $PROMOTE_SOURCE"
           if (env.DEPLOYMENT_TYPE == 'EC2') {
-            if (env.ACTION == 'PROMOTE') {
-              echo "-------------------------------------- inside promote condition -------------------------------"
-              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker image tag "$REGISTRY_URL:$PROMOTE_SOURCE" "$REGISTRY_URL:$PROMOTE_TAG""'
-              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker push "$REGISTRY_URL:$PROMOTE_TAG""'
-            }
             if (env.ARTIFACTORY == 'ECR') {
-              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "`aws ecr get-login --no-include-email --region us-east-1`"'
+              sh 'set +x; ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN `aws ecr get-login --no-include-email --region us-east-1 --registry-ids "$AWS_ACCOUNT_NUMBER"` " ;set -x'
             }
             if (env.ARTIFACTORY == 'JFROG') {
               withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                   sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL""'
               }
+            }
+
+            if (env.ACTION == 'PROMOTE') {
+              echo "-------------------------------------- inside promote condition -------------------------------"
+              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker image tag "$REGISTRY_URL:$PROMOTE_SOURCE" "$REGISTRY_URL:$PROMOTE_TAG""'
+              sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker push "$REGISTRY_URL:$PROMOTE_TAG""'
             }
 
             sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "sleep 5s"'
@@ -172,7 +214,9 @@ pipeline {
                   '''
                   script {
                     def url = sh (returnStdout: true, script: '''kubectl get svc -n "$namespace_name" | grep "$RELEASE_NAME-$service" | awk '{print $4}' ''').trim()
-                    print("##\$@\$ http://$url ##\$@\$")
+                    if (url != "<pending>") {
+                      print("##\$@\$ http://$url ##\$@\$")
+                    }
                   }
             }
             if (env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK') {

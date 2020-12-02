@@ -209,7 +209,7 @@ pipeline {
                     cp "$KUBECONFIG" kube
                     sed -i s+#SERVICE_NAME#+"$service"+g ./helm_chart/values.yaml ./helm_chart/Chart.yaml
                     kubectl create ns "$namespace_name" || true
-                    helm upgrade --install $RELEASE_NAME -n "$namespace_name" helm_chart --set image.repository="$REGISTRY_URL" --set image.tag="$BUILD_TAG" --set image.registrySecret="regcred"  --set service.internalport="$SERVICE_PORT"
+                    helm upgrade --install $RELEASE_NAME -n "$namespace_name" helm_chart --atomic --timeout 120s --set image.repository="$REGISTRY_URL" --set image.tag="$BUILD_TAG" --set image.registrySecret="regcred"  --set service.internalport="$SERVICE_PORT"
                     sleep 10
                   '''
                   script {

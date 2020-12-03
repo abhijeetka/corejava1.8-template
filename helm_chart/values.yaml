@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: REGISTRY_URL
   tag: BUILD_ID
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   registrySecret: REGISTRY_SECRET_ID
 
 nameOverride: #SERVICE_NAME#

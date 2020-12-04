@@ -214,7 +214,8 @@ pipeline {
                     sleep 10
                   '''
                   script {
-                    def url = sh (returnStdout: true, script: '''kubectl get svc -n "$namespace_name" | grep "$RELEASE_NAME-$service" | awk '{print $4}' ''').trim()
+                    env.temp_service_name = "$RELEASE_NAME-$service".take(63)
+                    def url = sh (returnStdout: true, script: '''kubectl get svc -n "$namespace_name" | grep "$temp_service_name" | awk '{print $4}' ''').trim()
                     if (url != "<pending>") {
                       print("##\$@\$ http://$url ##\$@\$")
                     }

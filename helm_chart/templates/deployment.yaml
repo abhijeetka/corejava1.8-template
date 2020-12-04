@@ -9,6 +9,8 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  strategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "#RELEASE_NAME#.name" . }}
@@ -18,6 +20,8 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "#RELEASE_NAME#.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+      annotations:
+        releaseTime: {{ dateInZone "2006-01-02 15:04:05Z" (now) "UTC"| quote }}
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.registrySecret }}

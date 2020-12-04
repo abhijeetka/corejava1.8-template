@@ -13,6 +13,11 @@ service:
   type: LoadBalancer
   port: 80
   internalport: CONTAINER_PORT
+  
+updateStrategy:
+  rollingUpdate:
+    maxUnavailable: 0
+  type: RollingUpdate
 
 ingress:
   enabled: false

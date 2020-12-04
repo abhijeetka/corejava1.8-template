@@ -34,10 +34,11 @@ pipeline {
           def job_name = "$env.JOB_NAME"
           print(job_name)
           def values = job_name.split('/')
-          namespace = values[0].replaceAll("[^a-zA-Z0-9]+","").toLowerCase().take(50)
+          namespace_prefix = values[0].replaceAll("[^a-zA-Z0-9]+","").toLowerCase().take(50)
+          namespace = "$namespace_prefix-$env.foldername".toLowerCase()
           service = values[2].replaceAll("[^a-zA-Z0-9]+","").toLowerCase().take(50)
-          print(namespace)
-          print(service)
+          print("kube namespace: $namespace")
+          print("service name: $service")
           env.namespace_name=namespace
           env.service=service
           if (env.ARTIFACTORY == "ECR") {

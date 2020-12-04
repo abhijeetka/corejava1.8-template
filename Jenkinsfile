@@ -7,7 +7,7 @@ pipeline {
   environment {
     BRANCHES = "${env.GIT_BRANCH}"
     COMMIT = "${env.GIT_COMMIT}"
-    RELEASE_NAME = "javaspringboot"
+    RELEASE_NAME = "corejava"
     SERVICE_PORT = "${APP_PORT}"
     DOCKERHOST = "${DOCKERHOST_IP}"
     REGISTRY_URL = "${DOCKER_REPO_URL}"

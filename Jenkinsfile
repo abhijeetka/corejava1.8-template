@@ -46,7 +46,9 @@ pipeline {
             def url_string = "$REGISTRY_URL"
             url = url_string.split('\\.')
             env.AWS_ACCOUNT_NUMBER = url[0]
-            echo "$AWS_ACCOUNT_NUMBER"
+            env.ECR_REGION = url[3]
+            echo "ecr region: $ECR_REGION"
+            echo "ecr acc no: $AWS_ACCOUNT_NUMBER"
 
             if (env.ARTIFACTORY_CREDENTIALS != null) {
                   withCredentials([string(credentialsId: "$ARTIFACTORY_CREDENTIALS", variable: 'awskey')]) {
@@ -130,7 +132,7 @@ pipeline {
 
           sh 'mvn clean install -Dmaven.test.skip=true'
           if (env.ARTIFACTORY == 'ECR') {
-            sh 'set +x; eval $(aws ecr get-login --no-include-email --registry-ids "$AWS_ACCOUNT_NUMBER" | sed \'s|https://||\') ;set -x'
+            sh 'set +x; eval $(aws ecr get-login --no-include-email --registry-ids "$AWS_ACCOUNT_NUMBER" --region "$ECR_REGION" | sed \'s|https://||\') ;set -x'
           }
           if (env.ARTIFACTORY == 'JFROG') {
               withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
@@ -160,7 +162,7 @@ pipeline {
           echo "echoed PROMOTE_SOURCE--- $PROMOTE_SOURCE"
           if (env.DEPLOYMENT_TYPE == 'EC2') {
             if (env.ARTIFACTORY == 'ECR') {
-              sh 'set +x; ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN `aws ecr get-login --no-include-email --region us-east-1 --registry-ids "$AWS_ACCOUNT_NUMBER"` " ;set -x'
+              sh 'set +x; ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN `aws ecr get-login --no-include-email --region "$ECR_REGION" --registry-ids "$AWS_ACCOUNT_NUMBER"` " ;set -x'
             }
             if (env.ARTIFACTORY == 'JFROG') {
               withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {

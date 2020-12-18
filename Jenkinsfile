@@ -90,7 +90,7 @@ pipeline {
       }
     }
     stage('Unit Tests') {
-        agent { label 'deployer' }
+        agent any
 
       when {
         expression {
@@ -102,7 +102,7 @@ pipeline {
       }
     }
     stage('SonarQube Scan') {
-      agent { label 'deployer' }
+      agent any
       when {
         expression {
           env.ACTION == 'DEPLOY'
@@ -117,7 +117,7 @@ pipeline {
       }
     }
     stage('Build') {
-        agent { label 'deployer' }
+        agent any
 
       when {
         expression {
@@ -212,7 +212,7 @@ pipeline {
                     cp "$KUBECONFIG" kube
                     sed -i s+#SERVICE_NAME#+"$service"+g ./helm_chart/values.yaml ./helm_chart/Chart.yaml
                     kubectl create ns "$namespace_name" || true
-                    helm upgrade --install $RELEASE_NAME -n "$namespace_name" helm_chart --atomic --timeout 180s --set image.repository="$REGISTRY_URL" --set image.tag="$BUILD_TAG" --set image.registrySecret="regcred"  --set service.internalport="$SERVICE_PORT"
+                    helm upgrade --install $RELEASE_NAME -n "$namespace_name" helm_chart --atomic --timeout 300s --set image.repository="$REGISTRY_URL" --set image.tag="$BUILD_TAG" --set image.registrySecret="regcred"  --set service.internalport="$SERVICE_PORT"
                     sleep 10
                   '''
                   script {

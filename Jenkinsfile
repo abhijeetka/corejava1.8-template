@@ -140,8 +140,9 @@ pipeline {
               }
           }
 
-          sh 'docker build -t "$REGISTRY_URL:$BUILD_TAG" -t "$REGISTRY_URL:latest" .'
-          sh 'docker push "$REGISTRY_URL"'
+          sh 'docker build -t "$REGISTRY_URL:$BUILD_TAG" .'
+          sh 'docker push "$REGISTRY_URL:$BUILD_TAG"'
+          sh 'docker rmi "$REGISTRY_URL:$BUILD_TAG" || true'
         }
 
       }

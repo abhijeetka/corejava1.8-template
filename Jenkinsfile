@@ -14,11 +14,12 @@ pipeline {
     ACTION = "${ACTION}"
     PROMOTE_ID = "${PROMOTE_ID}"
     PROMOTE_STAGE = "${PROMOTE_STAGE}"
+    PROMOTE_JOB_NAME = "${PROMOTE_JOB_NAME}"
     BUILD_VERSION = "${BUILD_VERSION}"
     foldername = getFolderName()
     DEPLOYMENT_TYPE = "${DEPLOYMENT_TYPE == ""? "EC2":DEPLOYMENT_TYPE}"
     KUBE_SECRET = "${KUBE_SECRET}"
-    BUILD_TAG = "${JOB_BASE_NAME}-${env.ACTION == "PROMOTE"? env.PROMOTE_STAGE: env.foldername}-${BUILD_VERSION}"
+    BUILD_TAG = "${env.ACTION == "PROMOTE"? env.PROMOTE_JOB_NAME == "null"?env.JOB_BASE_NAME:env.PROMOTE_JOB_NAME : env.JOB_BASE_NAME}-${env.ACTION == "PROMOTE"? env.PROMOTE_STAGE: env.foldername}-${BUILD_VERSION}"
     PROMOTE_TAG = "${JOB_BASE_NAME}-${foldername}-${PROMOTE_ID}"
     PROMOTE_SOURCE = "${JOB_BASE_NAME}-${foldername}-latest"
     CHROME_BIN = "/usr/bin/google-chrome"
@@ -227,6 +228,7 @@ pipeline {
             if (env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK') {
               echo "-------------------------------------- inside rollback condition -------------------------------"
               sh '''
+                docker pull "$REGISTRY_URL:$BUILD_TAG"
                 docker image tag "$REGISTRY_URL:$BUILD_TAG" "$REGISTRY_URL:$PROMOTE_SOURCE"
                 docker push "$REGISTRY_URL:$PROMOTE_SOURCE"
               '''

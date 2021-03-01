@@ -140,6 +140,12 @@ pipeline {
                   sh 'docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL"'
               }
           }
+          if (env.ARTIFACTORY == 'ACR') {
+              withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                  sh 'docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL"'
+
+                }
+          }
 
           sh 'docker build -t "$REGISTRY_URL:$BUILD_TAG" .'
           sh 'docker push "$REGISTRY_URL:$BUILD_TAG"'
@@ -167,6 +173,11 @@ pipeline {
               sh 'set +x; ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN `aws ecr get-login --no-include-email --region "$ECR_REGION" --registry-ids "$AWS_ACCOUNT_NUMBER"` " ;set -x'
             }
             if (env.ARTIFACTORY == 'JFROG') {
+              withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                  sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL""'
+              }
+            }
+            if (env.ARTIFACTORY == 'ACR') {
               withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                   sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL""'
               }
@@ -200,6 +211,15 @@ pipeline {
               '''
             }
             if (env.ARTIFACTORY == 'JFROG') {
+                withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG'), usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                  sh '''
+                    kubectl create ns "$namespace_name" || true
+                    kubectl -n "$namespace_name" create secret docker-registry regcred --docker-server="$REGISTRY_URL" --docker-username="$USERNAME" --docker-password="$PASSWORD" || true
+                  '''
+              }
+            }
+            
+            if (env.ARTIFACTORY == 'ACR') {
                 withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG'), usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                   sh '''
                     kubectl create ns "$namespace_name" || true

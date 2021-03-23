@@ -25,6 +25,7 @@ pipeline {
     CHROME_BIN = "/usr/bin/google-chrome"
     ARTIFACTORY = "${ARTIFACTORY == ""? "ECR":ARTIFACTORY}"
     ARTIFACTORY_CREDENTIALS = "${ARTIFACTORY_CREDENTIAL_ID}"
+    NGINX_IP = "${NGINX_IP}"
   }
 
   stages {
@@ -218,7 +219,7 @@ pipeline {
                   '''
               }
             }
-            
+
             if (env.ARTIFACTORY == 'ACR') {
                 withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG'), usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                   sh '''
@@ -253,6 +254,21 @@ pipeline {
                 docker push "$REGISTRY_URL:$PROMOTE_SOURCE"
               '''
 
+            }
+
+            if (env.NGINX_IP != 'null') {
+              sh '''
+                LOCATION=/$foldername/$service/
+                sed -i "s#LOCATION#$LOCATION#g" nginx-location.conf
+                sed -i "s#UPSTREAM#"$service"#g" nginx-location.conf
+                sed -i "s#DOCKERHOST_IP#$DOCKERHOST#g" nginx-upstream.conf
+                sed -i "s#APP_PORT#$SERVICE_PORT#g" nginx-upstream.conf
+                sed -i "s#UPSTREAM#"$service"#g" nginx-upstream.conf
+
+                scp -o "StrictHostKeyChecking=no" nginx-location.conf ciuser@$NGINX_IP:/home/ciuser/locations/$service.conf
+                scp -o "StrictHostKeyChecking=no" nginx-upstream.conf ciuser@$NGINX_IP:/home/ciuser/upstreams/$service.conf
+                ssh -o "StrictHostKeyChecking=no" ciuser@$NGINX_IP "docker exec -d nginx service nginx reload"
+              '''
             }
           }
         }

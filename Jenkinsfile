@@ -79,7 +79,14 @@ pipeline {
                     env.AWS_SESSION_TOKEN = sh (returnStdout: true, script: ''' echo ${sts_credentails} | jq -r .SessionToken ''').trim()
 
 
-                  } else {
+                  }
+                  else if (env.ARTIFACTORY == "ACR"){
+                      def url_string = "$REGISTRY_URL"
+                      url = url_string.split('/')
+                      env.ACR_LOGIN_URL = url[0]
+                      echo "Reg Login url: $ACR_LOGIN_URL"
+                   } 
+                   else {
                     env.AWS_ACCESS_KEY_ID = "$aws_access_key"
                     env.AWS_SECRET_ACCESS_KEY  = "$aws_secret_key"
                   }
@@ -143,7 +150,7 @@ pipeline {
           }
           if (env.ARTIFACTORY == 'ACR') {
               withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                  sh 'docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL"'
+                  sh 'docker login -u "$USERNAME" -p "$PASSWORD" "$ACR_LOGIN_URL"'
 
                 }
           }
@@ -180,7 +187,7 @@ pipeline {
             }
             if (env.ARTIFACTORY == 'ACR') {
               withCredentials([usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                  sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USERNAME" -p "$PASSWORD" "$REGISTRY_URL""'
+                  sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker login -u "$USERNAME" -p "$PASSWORD" "$ACR_LOGIN_URL""'
               }
             }
 
@@ -224,7 +231,7 @@ pipeline {
                 withCredentials([file(credentialsId: "$KUBE_SECRET", variable: 'KUBECONFIG'), usernamePassword(credentialsId: "$ARTIFACTORY_CREDENTIALS", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                   sh '''
                     kubectl create ns "$namespace_name" || true
-                    kubectl -n "$namespace_name" create secret docker-registry regcred --docker-server="$REGISTRY_URL" --docker-username="$USERNAME" --docker-password="$PASSWORD" || true
+                    kubectl -n "$namespace_name" create secret docker-registry regcred --docker-server="$ACR_LOGIN_URL" --docker-username="$USERNAME" --docker-password="$PASSWORD" || true
                   '''
               }
             }

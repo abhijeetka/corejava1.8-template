@@ -80,12 +80,7 @@ pipeline {
 
 
                   }
-                  else if (env.ARTIFACTORY == "ACR"){
-                      def url_string = "$REGISTRY_URL"
-                      url = url_string.split('/')
-                      env.ACR_LOGIN_URL = url[0]
-                      echo "Reg Login url: $ACR_LOGIN_URL"
-                   } 
+ 
                    else {
                     env.AWS_ACCESS_KEY_ID = "$aws_access_key"
                     env.AWS_SECRET_ACCESS_KEY  = "$aws_secret_key"
@@ -95,6 +90,12 @@ pipeline {
                 env.AWS_SECRET_ACCESS_KEY  = ""
               }
           }
+          else if (env.ARTIFACTORY == "ACR"){
+                      def url_string = "$REGISTRY_URL"
+                      url = url_string.split('/')
+                      env.ACR_LOGIN_URL = url[0]
+                      echo "Reg Login url: $ACR_LOGIN_URL"
+                   }
         }
       }
     }

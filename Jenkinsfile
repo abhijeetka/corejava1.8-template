@@ -2,6 +2,7 @@ def getFolderName() {
   def array = pwd().split("/")
   return array[array.length - 2];
 }
+def agentLabel = "${env.JENKINS_AGENT == null ? "":env.JENKINS_AGENT}"
 pipeline {
   agent any
   environment {
@@ -30,6 +31,7 @@ pipeline {
 
   stages {
     stage('init') {
+      agent { label agentLabel }
       steps {
         script {
 
@@ -100,7 +102,7 @@ pipeline {
       }
     }
     stage('Unit Tests') {
-        agent any
+      agent { label agentLabel }
 
       when {
         expression {
@@ -112,7 +114,7 @@ pipeline {
       }
     }
     stage('SonarQube Scan') {
-      agent any
+      agent { label agentLabel }
       when {
         expression {
           env.ACTION == 'DEPLOY'
@@ -127,7 +129,7 @@ pipeline {
       }
     }
     stage('Build') {
-        agent any
+      agent { label agentLabel }
 
       when {
         expression {
@@ -165,6 +167,7 @@ pipeline {
     }
 
     stage('Deploy') {
+      agent { label agentLabel }
       when {
         expression {
           env.ACTION == 'DEPLOY' || env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK'
@@ -284,6 +287,7 @@ pipeline {
     }
 
     stage('Destroy') {
+      agent { label agentLabel }
       when {
         expression {
           env.DEPLOYMENT_TYPE == 'EC2' && env.ACTION == 'DESTROY'

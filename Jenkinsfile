@@ -1,8 +1,16 @@
+import groovy.json.JsonSlurper
 def getFolderName() {
   def array = pwd().split("/")
   return array[array.length - 2];
 }
+def parseJson(jsonString) {
+    def lazyMap = new JsonSlurper().parseText(jsonString)
+    def m = [:]
+    m.putAll(lazyMap)
+    return m
+}
 def agentLabel = "${env.JENKINS_AGENT == null ? "":env.JENKINS_AGENT}"
+
 pipeline {
   agent any
   environment {
@@ -27,6 +35,7 @@ pipeline {
     ARTIFACTORY = "${ARTIFACTORY == ""? "ECR":ARTIFACTORY}"
     ARTIFACTORY_CREDENTIALS = "${ARTIFACTORY_CREDENTIAL_ID}"
     NGINX_IP = "${NGINX_IP}"
+    STAGE_FLAG = "${STAGE_FLAG}"
   }
 
   stages {
@@ -45,6 +54,15 @@ pipeline {
           print("service name: $service")
           env.namespace_name=namespace
           env.service=service
+          if (env.STAGE_FLAG != 'null' && env.STAGE_FLAG != null) {
+              stage_flag = parseJson("$env.STAGE_FLAG")
+          } else {
+              stage_flag = parseJson('{"qualysScan": true, "sonarScan": true, "zapScan": true}')
+          }
+          if (!stage_flag) {
+            stage_flag = parseJson('{"qualysScan": true, "sonarScan": true, "zapScan": true}')
+          }
+
           if (env.ARTIFACTORY == "ECR") {
 
             def url_string = "$REGISTRY_URL"
@@ -117,7 +135,7 @@ pipeline {
       agent { label agentLabel }
       when {
         expression {
-          env.ACTION == 'DEPLOY'
+          env.ACTION == 'DEPLOY' && stage_flag['sonarScan']
         }
       }
       steps {
@@ -164,6 +182,17 @@ pipeline {
         }
 
       }
+    }
+    stage('Qualys Scan') {
+      agent { label agentLabel }
+      when {
+        expression {
+          env.ACTION == 'DEPLOY' && stage_flag['qualysScan']
+        }
+      }
+      getImageVulnsFromQualys useGlobalConfig:true,
+      imageIds: env.REGISTRY_URL+":"+env.BUILD_TAG
+      sh 'docker rmi "$REGISTRY_URL:$BUILD_TAG" || true'
     }
 
     stage('Deploy') {

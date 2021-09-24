@@ -233,7 +233,7 @@ pipeline {
             sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "sleep 5s"'
             sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker pull "$REGISTRY_URL:$BUILD_TAG""'
             sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker stop ${JOB_BASE_NAME} || true && docker rm ${JOB_BASE_NAME} || true"'
-            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker run -d --name ${JOB_BASE_NAME} -p $SERVICE_PORT:$SERVICE_PORT $REGISTRY_URL:$BUILD_TAG"'
+            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker run -d --restart always --name ${JOB_BASE_NAME} -p $SERVICE_PORT:$SERVICE_PORT $REGISTRY_URL:$BUILD_TAG"'
 
             if (env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK') {
               echo "-------------------------------------- inside promote/rollback condition -------------------------------"

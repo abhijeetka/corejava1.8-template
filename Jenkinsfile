@@ -192,7 +192,6 @@ pipeline {
       }
       getImageVulnsFromQualys useGlobalConfig:true,
       imageIds: env.REGISTRY_URL+":"+env.BUILD_TAG
-      sh 'docker rmi "$REGISTRY_URL:$BUILD_TAG" || true'
     }
     stage('Rapid7 Scan') {
       agent { label agentLabel }

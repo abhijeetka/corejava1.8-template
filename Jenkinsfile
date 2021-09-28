@@ -57,10 +57,10 @@ pipeline {
           if (env.STAGE_FLAG != 'null' && env.STAGE_FLAG != null) {
               stage_flag = parseJson("$env.STAGE_FLAG")
           } else {
-              stage_flag = parseJson('{"qualysScan": true, "sonarScan": true, "zapScan": true}')
+              stage_flag = parseJson('{"qualysScan": true, "sonarScan": true, "zapScan": true, "rapid7Scan": true, "sysdigScan": true}')
           }
           if (!stage_flag) {
-            stage_flag = parseJson('{"qualysScan": true, "sonarScan": true, "zapScan": true}')
+            stage_flag = parseJson('{"qualysScan": true, "sonarScan": true, "zapScan": true, "rapid7Scan": true, "sysdigScan": true}')
           }
 
           if (env.ARTIFACTORY == "ECR") {
@@ -194,7 +194,34 @@ pipeline {
       imageIds: env.REGISTRY_URL+":"+env.BUILD_TAG
       sh 'docker rmi "$REGISTRY_URL:$BUILD_TAG" || true'
     }
+    stage('Rapid7 Scan') {
+      agent { label agentLabel }
+      when {
+        expression {
+          env.ACTION == 'DEPLOY' && stage_flag['rapid7Scan']
+        }
+      }
+      assessContainerImage failOnPluginError: true,
+      imageId: env.REGISTRY_URL+":"+env.BUILD_TAG,
+      thresholdRules: [
+      criticalVulnerabilities(action: 'Fail', threshold: '1')
+      ],
+      nameRules: [
+      vulnerablePackageName(action: 'Fail', contains: 'nginx')
+      ]
 
+    }
+    stage('Sysdig Scan') {
+      agent { label agentLabel }
+      when {
+        expression {
+          env.ACTION == 'DEPLOY' && stage_flag['sysdigScan']
+        }
+      }
+      sh 'echo  $REGISTRY_URL:$BUILD_TAG > sysdig_secure_images'
+      sysdig inlineScanning: true, bailOnFail: true, bailOnPluginFail: true, name: 'sysdig_secure_images'
+
+    }
     stage('Deploy') {
       agent { label agentLabel }
       when {
@@ -338,4 +365,10 @@ pipeline {
       }
     }
   }
+  post { 
+        cleanup {   
+                sh 'docker  rmi  $REGISTRY_URL:$BUILD_TAG || true'   
+        }
+  }
+
 }

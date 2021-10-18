@@ -36,6 +36,7 @@ pipeline {
     ARTIFACTORY_CREDENTIALS = "${ARTIFACTORY_CREDENTIAL_ID}"
     NGINX_IP = "${NGINX_IP}"
     STAGE_FLAG = "${STAGE_FLAG}"
+    CONTEXT = ""
   }
 
   stages {
@@ -259,7 +260,7 @@ pipeline {
             sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "sleep 5s"'
             sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker pull "$REGISTRY_URL:$BUILD_TAG""'
             sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker stop ${JOB_BASE_NAME} || true && docker rm ${JOB_BASE_NAME} || true"'
-            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker run -d --restart always --name ${JOB_BASE_NAME} -p $SERVICE_PORT:$SERVICE_PORT $REGISTRY_URL:$BUILD_TAG"'
+            sh 'ssh -o "StrictHostKeyChecking=no" ciuser@$DOCKERHOST "docker run -d --restart always --name ${JOB_BASE_NAME} -p $SERVICE_PORT:$SERVICE_PORT $REGISTRY_URL:$BUILD_TAG -e context=$CONTEXT"'
 
             if (env.ACTION == 'PROMOTE' || env.ACTION == 'ROLLBACK') {
               echo "-------------------------------------- inside promote/rollback condition -------------------------------"

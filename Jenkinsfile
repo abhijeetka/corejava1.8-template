@@ -58,10 +58,10 @@ pipeline {
           if (env.STAGE_FLAG != 'null' && env.STAGE_FLAG != null) {
               stage_flag = parseJson("$env.STAGE_FLAG")
           } else {
-              stage_flag = parseJson('{"qualysScan": true, "sonarScan": true, "zapScan": true, "rapid7Scan": true, "sysdigScan": true}')
+              stage_flag = parseJson('{"qualysScan": false, "sonarScan": true, "zapScan": false, "rapid7Scan": false, "sysdigScan": false}')
           }
           if (!stage_flag) {
-            stage_flag = parseJson('{"qualysScan": true, "sonarScan": true, "zapScan": true, "rapid7Scan": true, "sysdigScan": true}')
+            stage_flag = parseJson('{"qualysScan": false, "sonarScan": true, "zapScan": false, "rapid7Scan": false, "sysdigScan": false}')
           }
 
           if (env.ARTIFACTORY == "ECR") {

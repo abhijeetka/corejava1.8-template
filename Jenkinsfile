@@ -304,6 +304,7 @@ pipeline {
                     kubectl create ns "$namespace_name" || true
                     helm upgrade --install $RELEASE_NAME -n "$namespace_name" helm_chart --atomic --timeout 300s --set image.repository="$REGISTRY_URL" --set image.tag="$BUILD_TAG" --set image.registrySecret="regcred"  --set service.internalport="$SERVICE_PORT"
                     sleep 10
+                    kubectl rollout restart deploy "${generalPresent.repoName}-$service" -n "$namespace_name"
                   '''
                   script {
                     env.temp_service_name = "$RELEASE_NAME-$service".take(63)

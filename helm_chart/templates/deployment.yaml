@@ -20,15 +20,30 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "#RELEASE_NAME#.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.vault }}
+  {{- if eq .Values.vault.type "vault" }}
       annotations:
-        releaseTime: {{ dateInZone "2006-01-02 15:04:05Z" (now) "UTC"| quote }}
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/role: {{ .Values.vault.role }}
+      {{- range .Values.vault.secretPath }}
+        vault.hashicorp.com/agent-inject-secret-{{ .fileName}}: {{ .path }}
+      {{- end }}
+  {{- end }}
+{{- end }}
     spec:
+    {{- if .Values.vault }}
+      serviceAccountName: {{ .Values.vault.serviceAccount }}
+    {{- end }}
       imagePullSecrets:
         - name: {{ .Values.image.registrySecret }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: context
+            value: {{ .Values.context }}
+
           # volumeMounts:
           #   - name: efs-pvc
           #     mountPath: ./src/main/resources

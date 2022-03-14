@@ -23,6 +23,7 @@ jobs:
         distribution: 'temurin'
         cache: maven      
     - run: mvn clean install -Dmaven.test.skip=true
-    - run: ls -lart ./target/
+    - name: Maven Test
+    - run: mvn clean test --batch-mode && ls -lart ./target/ 
     - name: Build Docker image
       run: docker build -t hello:latest .

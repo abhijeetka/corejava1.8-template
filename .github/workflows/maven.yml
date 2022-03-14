@@ -24,4 +24,4 @@ jobs:
         cache: maven      
     - run: mvn clean install -Dmaven.test.skip=true
     - run: ls -lart ./target/
-    - run: docker build -t test:$(date) .
+    - run: docker build -t hello:latest .

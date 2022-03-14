@@ -21,9 +21,16 @@ jobs:
       with:
         java-version: '8'
         distribution: 'temurin'
-        cache: maven      
-    - run: mvn clean install -Dmaven.test.skip=true
+        cache: maven  
+    - name: Maven Build and Install
+      run: mvn clean install -Dmaven.test.skip=true
     - name: Maven Test
       run: mvn test --batch-mode && ls -lart ./target/ 
     - name: Build Docker image
       run: docker build -t hello:latest .
+      
+    - name: Docker Login 
+      run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      
+    - name: Docker Publish
+      run: docker push hello:latest

@@ -29,7 +29,7 @@ jobs:
       run: mvn clean test --batch-mode
     
     - name: Check files
-      run: ls -lart
+      run: ls -lart target/
     
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag account-name:$(date +%s)

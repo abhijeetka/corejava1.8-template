@@ -22,11 +22,5 @@ jobs:
         java-version: '8'
         distribution: 'temurin'
         cache: maven      
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml -Dmaven.test.skip=true && ls -lart target/
-    - name: test with Maven
-      run: mvn clean test --batch-mode
-    - name: Check files
-      run: pwd && cd /home/runner/work/corejava1.8-template/corejava1.8-template/target/ && ls -lart
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag account-name:$(date +%s)
+    - run: mvn clean install -Dmaven.test.skip=true
+    - run: ls -lart ./target/

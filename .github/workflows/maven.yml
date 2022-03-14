@@ -23,7 +23,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn clean install -Dmaven.test.skip=true
+      run: mvn clean package -Dmaven.test.skip=true
 
     - name: test with Maven
       run: mvn clean test --batch-mode

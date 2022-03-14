@@ -24,6 +24,6 @@ jobs:
         cache: maven      
     - run: mvn clean install -Dmaven.test.skip=true
     - name: Maven Test
-    - run: mvn clean test --batch-mode && ls -lart ./target/ 
+      run: mvn clean test --batch-mode && ls -lart ./target/ 
     - name: Build Docker image
       run: docker build -t hello:latest .

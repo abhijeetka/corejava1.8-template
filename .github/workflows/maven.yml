@@ -30,7 +30,7 @@ jobs:
       run: mvn clean test --batch-mode
     
     - name: Check files
-      run: ls -lart target/
+      run: pwd && cd /home/runner/work/corejava1.8-template/corejava1.8-template/target/ && ls -lart
     
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag account-name:$(date +%s)

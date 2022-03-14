@@ -27,6 +27,9 @@ jobs:
 
     - name: test with Maven
       run: mvn clean test --batch-mode
-      
+    
+    - name: Check files
+      run: ls -lart
+    
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag account-name:$(date +%s)

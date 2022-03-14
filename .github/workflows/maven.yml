@@ -22,8 +22,9 @@ jobs:
         java-version: '8'
         distribution: 'temurin'
         cache: maven
+        
     - name: Build with Maven
-      run: mvn clean install -Dmaven.test.skip=true && ls -lart /target
+      run: mvn -B package --file pom.xml
 
     - name: test with Maven
       run: mvn clean test --batch-mode

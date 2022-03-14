@@ -21,16 +21,12 @@ jobs:
       with:
         java-version: '8'
         distribution: 'temurin'
-        cache: maven
-        
+        cache: maven      
     - name: Build with Maven
       run: mvn -B package --file pom.xml && ls -lart target/
-
     - name: test with Maven
       run: mvn clean test --batch-mode
-    
     - name: Check files
       run: pwd && cd /home/runner/work/corejava1.8-template/corejava1.8-template/target/ && ls -lart
-    
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag account-name:$(date +%s)

@@ -36,12 +36,12 @@ jobs:
        SONAR_PROJECT_KEY: "Github-Sonar-Test-1"
       
     - name: Build Docker image
-      run: docker build -t ${{ secrets.REGISTRY_URL }}/hello:$GITHUB_RUN_NUMBER .
+      run: docker build -t ${{ secrets.REPOSITORY_URL }}/hello:$GITHUB_RUN_NUMBER .
       
     - name: Docker Login 
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       
     - name: Docker Publish
-      run: docker push ${{ secrets.REGISTRY_URL }}/hello:$GITHUB_RUN_NUMBER
+      run: docker push ${{ secrets.REPOSITORY_URL }}/hello:$GITHUB_RUN_NUMBER
       
     

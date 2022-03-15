@@ -15,7 +15,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-     PROJECT_NAME: "GithubJavaSample"
+     PROJECT_NAME: "Github-Java-Sample"
 
     steps:
     - uses: actions/checkout@v2

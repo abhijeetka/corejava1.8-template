@@ -25,8 +25,11 @@ jobs:
         java-version: '8'
         distribution: 'temurin'
         cache: maven  
-        
-    - run: echo "${{ env.REGISTRY_URL }}"
+  
+  # Since with is a map and cannot interpret shell so we need to export it and use it as env variable.
+    - name: exporting Workflow number
+      run: echo "RUN_NUMBER=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+      
     - name: Maven Build and Install
       run: mvn clean install -Dmaven.test.skip=true
       
@@ -62,6 +65,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.REPOSITORY_URL }}/${{ env.PROJECT_NAME }}:$GITHUB_RUN_NUMBER
+        tags: ${{ secrets.REPOSITORY_URL }}/${{ env.PROJECT_NAME }}:${{ env.RUN_NUMBER }}
 
     

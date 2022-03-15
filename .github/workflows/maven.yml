@@ -29,6 +29,12 @@ jobs:
   # Since with is a map and cannot interpret shell so we need to export it and use it as env variable.
     - name: exporting Workflow number
       run: echo "RUN_NUMBER=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+  
+  # Since we need docker image name in lower case, using this funciton.
+    - id: project_name
+      uses: ASzc/change-string-case-action@v2
+      with:
+        string: ${{ env.PROJECT_NAME }} 
       
     - name: Maven Build and Install
       run: mvn clean install -Dmaven.test.skip=true
@@ -65,6 +71,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.REPOSITORY_URL }}/${{ env.PROJECT_NAME }}:${{ env.RUN_NUMBER }}
+        tags: ${{ secrets.REPOSITORY_URL }}/${{ steps.project_name.outputs.lowercase }}:${{ env.RUN_NUMBER }}
 
     

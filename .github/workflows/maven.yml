@@ -29,7 +29,10 @@ jobs:
   # Since with is a map and cannot interpret shell so we need to export it and use it as env variable.
     - name: exporting Workflow number
       run: echo "RUN_NUMBER=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
-  
+
+    - name: Assign variable Repository type
+      id: registry_type
+      run: echo '::set-output name=secret::${{ secrets.REPOSITORY_TYPE }}'
   # Since we need docker image name in lower case, using this funciton.
     - id: project_name
       uses: ASzc/change-string-case-action@v2
@@ -60,14 +63,14 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    - if: ${{ secrets.REPOSITORY_TYPE }} != 'AWS'
+    - if: steps.registry_type.outputs.secret != 'AWS'
       name: Login to DockerHub
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - if: ${{ secrets.REPOSITORY_TYPE }} != 'AWS'
+    - if: steps.registry_type.outputs.secret != 'AWS'
       name: Build and push
       uses: docker/build-push-action@v2
       with:
@@ -77,6 +80,7 @@ jobs:
 
 # Docker aws login and publish on ECR.
     - name: Configure AWS credentials
+      if: steps.registry_type.outputs.secret == 'AWS'
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -85,9 +89,11 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
+      if: steps.registry_type.outputs.secret == 'AWS'
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build, tag, and push image to Amazon ECR
+      if: steps.registry_type.outputs.secret == 'AWS'
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ steps.project_name.outputs.lowercase }}

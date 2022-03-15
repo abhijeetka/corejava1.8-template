@@ -32,7 +32,7 @@ jobs:
       run: mvn --batch-mode -V -U -e org.sonarsource.scanner.maven:sonar-maven-plugin:3.5.0.1254:sonar -Dsonar.java.binaries='.' -Dsonar.exclusions='pom.xml, target/**/*' -Dsonar.projectKey=Github-Sonar-Test -Dsonar.projectName=Github-Sonar-Test
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrtes.SONAR_HOST_URL }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       
     - name: Build Docker image
       run: docker build -t abhijeetka/hello:latest .

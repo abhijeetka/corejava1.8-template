@@ -62,6 +62,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.REPOSITORY_URL }}/${{ env.PROJECT_NAME }}:$GITHUB_RUN_NUMBER
+        tags: abhijeetka/${{ env.PROJECT_NAME }}:$GITHUB_RUN_NUMBER
 
     

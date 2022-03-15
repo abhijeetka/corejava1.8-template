@@ -15,7 +15,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-     REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+     REGISTRY_URL: "NameofProduct"
 
     steps:
     - uses: actions/checkout@v2
@@ -41,12 +41,12 @@ jobs:
        SONAR_PROJECT_KEY: "Github-Sonar-Test-1"
       
     - name: Build Docker image
-      run: docker build -t ${{ env.REGISTRY_URL }}/hello:$GITHUB_RUN_NUMBER .
+      run: docker build -t ${{ secrets.REGISTRY_URL }}/hello:$GITHUB_RUN_NUMBER .
       
     - name: Docker Login 
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       
     - name: Docker Publish
-      run: docker push ${{ env.REGISTRY_URL }}/hello:$GITHUB_RUN_NUMBER
+      run: docker push ${{ secrets.REGISTRY_URL }}/hello:$GITHUB_RUN_NUMBER
       
     

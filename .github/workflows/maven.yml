@@ -5,14 +5,14 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ * ]
+    branches:
+      - '**'
   pull_request:
-    branches: [ * ]
+    branches:
+      - '**'
 
 jobs:
-  build:
-
-
+  ci:
     runs-on: ubuntu-latest
     env:
      PROJECT_NAME: "Github-Java-Sample"
@@ -30,6 +30,7 @@ jobs:
     - name: exporting Workflow number
       run: echo "RUN_NUMBER=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
 
+# Since we cannot use secrets in if conditions
     - name: Assign variable Repository type
       id: registry_type
       run: echo '::set-output name=secret::${{ secrets.REPOSITORY_TYPE }}'

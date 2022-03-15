@@ -62,6 +62,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.REGISTRY_URL }}/${{ env.PROJECT_NAME }}:$GITHUB_RUN_NUMBER
+        tags: ${{ secrets.REPOSITORY_URL }}/${{ env.PROJECT_NAME }}:$GITHUB_RUN_NUMBER
 
     

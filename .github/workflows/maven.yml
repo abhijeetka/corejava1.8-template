@@ -25,6 +25,8 @@ jobs:
         java-version: '8'
         distribution: 'temurin'
         cache: maven  
+        
+    - run: echo "${{ env.REGISTRY_URL }}"
     - name: Maven Build and Install
       run: mvn clean install -Dmaven.test.skip=true
       

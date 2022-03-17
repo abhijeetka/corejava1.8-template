@@ -1,0 +1,16 @@
+name: Deployment-k8s
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        default: '10'
+        type: string
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: 'dev'
+      url: 'https://calibo.com'

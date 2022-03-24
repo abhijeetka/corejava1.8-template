@@ -35,7 +35,7 @@ jobs:
             # Considering that we have AWS CLI already present
             aws ecr get-login --no-include-email --region "$ECR_REGION"
             docker version
-            docker pull public.ecr.aws/lazsa/che-java15-maven
+            docker pull public.ecr.aws/lazsa/che-java15-maven:v1.0.0
             docker image ls 
             docker run -d -p 8080:8082 ${{ secrets.REPOSITORY_URL}}/${{ secrets.IMAGE_NAME }}:${{ github.event.inputs.build_number }}
             docker ps

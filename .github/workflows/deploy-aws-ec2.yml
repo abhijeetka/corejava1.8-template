@@ -33,9 +33,9 @@ jobs:
             # export access key and
             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY}
             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_KEY}
-            echo "Considering that we have AWS CLI already present $ECR_REGION"
+            echo "Considering that we have AWS CLI already present ${ECR_REGION}"
             aws --version 
-            docker login -u AWS -p $(aws ecr get-login-password --region "$ECR_REGION") 781950061287.dkr.ecr.us-east-1.amazonaws.com
+            docker login -u AWS -p $(aws ecr get-login-password --region "${ECR_REGION}") 781950061287.dkr.ecr.us-east-1.amazonaws.com
             docker version
             docker pull public.ecr.aws/lazsa/che-java15-maven:v1.0.0
             docker image ls 

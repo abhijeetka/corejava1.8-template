@@ -34,6 +34,7 @@ jobs:
             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_KEY}
             echo "Considering that we have AWS CLI already present"
             aws --version 
+            aws s3 ls
             aws ecr get-login --no-include-email --region "$ECR_REGION"
             docker version
             docker pull public.ecr.aws/lazsa/che-java15-maven:v1.0.0

@@ -21,12 +21,19 @@ jobs:
           PRIVATE_KEY: ${{ secrets.SSH_KEY  }}
           HOSTNAME: ${{ secrets.MACHINE_IP  }}
           USER_NAME: ${{ secrets.MACHINE_USERNAME  }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
 
             #Now we have got the access of EC2 and we will start the deploy .
+            # export access key and
+            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY}
+            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_KEY}
+            # Considering that we have AWS CLI already present
+            aws ecr get-login --no-include-email --region "$ECR_REGION"
             docker version
             docker run -d -p 8080:8082 ${{ secrets.REPOSITORY_URL}}/${{ secrets.IMAGE_NAME }}:${{ github.event.inputs.build_number }}
             docker ps

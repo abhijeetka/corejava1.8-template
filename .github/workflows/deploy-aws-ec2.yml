@@ -34,7 +34,7 @@ jobs:
             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY}
             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_KEY}
             echo "Considering that we have AWS CLI already present ${ECR_REGION}"
-            echo "$ECR_REGION"
+            echo "${{ env.ECR_REGION }}"
             aws --version 
             docker stop ${{ secrets.IMAGE_NAME }} || true && docker rm ${{ secrets.IMAGE_NAME }} || true
             docker login -u AWS -p $(aws ecr get-login-password --region "us-east-1") 781950061287.dkr.ecr.us-east-1.amazonaws.com

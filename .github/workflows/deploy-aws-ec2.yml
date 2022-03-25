@@ -1,5 +1,4 @@
 name: Deployment
-
 on:
   workflow_dispatch:
     inputs:

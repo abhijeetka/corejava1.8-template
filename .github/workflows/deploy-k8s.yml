@@ -21,7 +21,15 @@ jobs:
 
     steps:
 
-# Create Namespace
+#configure kubeconfig
+      - name: Configure Kubeconfig File
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ env.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
+# Install Kubectl
       - name: Install kubectl version
         env:
           KUBECTL_VERSION: "1.23.5-00"

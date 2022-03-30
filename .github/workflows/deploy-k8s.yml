@@ -22,19 +22,22 @@ jobs:
     steps:
 
 # Create Namespace
-      - uses: actions-hub/kubectl@master
-        name: Create Namespace
+      - name: Install kubectl version
         env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: create namespace ${{ github.event.inputs.k8s_namespace }} || true
+          KUBECTL_VERSION: "1.21.1"
+        run: |
+          apk add --no-cache --update openssl curl ca-certificates && \
+              curl -L https://storage.googleapis.com/kubernetes-release/release/v$KUBE_VERSION/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl && \
+              chmod +x /usr/local/bin/kubectl && \
+              rm -rf /var/cache/apk/*
+          kubectl --version 
 
-      - uses: actions-hub/kubectl@master
-        name: Create Docker Registry Credentials
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: create namespace ${{ github.event.inputs.k8s_namespace }} || true
+#      - uses: actions-hub/kubectl@master
+#        name: Create Namespace
+#        env:
+#          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+#        with:
+#          args: create namespace ${{ github.event.inputs.k8s_namespace }} || true
 
 # Create Docker Registry Credentials
 

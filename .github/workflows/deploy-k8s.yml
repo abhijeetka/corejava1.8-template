@@ -41,7 +41,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y kubectl=${{ env.KUBECTL_VERSION }}
           kubectl version
-          
+
+  #Install Helm
+      - name: Install helm
+        env:
+          HELM_VERSION: 3.8.0
+        run: |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh -v v${{ env.HELM_VERSION }}
+          helm version
+
 # Create namespace
       - name: Create Namespace if not present
         run: |
@@ -67,7 +77,7 @@ jobs:
 # check for promote
 #
 # create namespace - Done
-# docker registry credentials
+# docker registry credentials Done
 #
 #         sed -i s+#SERVICE_NAME#+"$service"+g ./helm_chart/values.yaml ./helm_chart/Chart.yaml
 #         kubectl create ns "$namespace_name" || true

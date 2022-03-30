@@ -57,10 +57,11 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.k8s_namespace }}" == "default"  || "${{ github.event.inputs.k8s_namespace }}" == "" ]
           then
-            NAMESPACE=$($GITHUB_ACTION_REPOSITORY| sed 's/\//_/g' )
+            NAMESPACE="$($GITHUB_ACTION_REPOSITORY| sed 's/\//_/g' )"
           else
-            NAMESPACE=${{ github.event.inputs.k8s_namespace }}
+            NAMESPACE="${{ github.event.inputs.k8s_namespace }}"
           fi
+          echo $NAMESPACE
           echo "NAMESPACE=$NAMESPACE" >> $GITHUB_ENV
           
           

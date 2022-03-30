@@ -20,16 +20,29 @@ jobs:
       url: 'https://calibo.com'
 
     steps:
+
+# Create Namespace
       - uses: actions-hub/kubectl@master
+        name: Create Namespace
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
           args: create namespace ${{ github.event.inputs.k8s_namespace }}
+
+      - uses: actions-hub/kubectl@master
+        name: Create Docker Registry Credentials
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: create namespace ${{ github.event.inputs.k8s_namespace }}
+
+# Create Docker Registry Credentials
+
 # study what needs to be installed
 # steps
 # check for promote
 #
-# create namespace
+# create namespace - Done
 # docker registry credentials
 #
 #         sed -i s+#SERVICE_NAME#+"$service"+g ./helm_chart/values.yaml ./helm_chart/Chart.yaml

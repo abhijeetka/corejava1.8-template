@@ -55,6 +55,7 @@ jobs:
 # Check the Namespace if null or default then create namespace depending upon the github repository.
       - name: Determine Kubernetes Namespace
         run: |
+          NAMESPACE="$($GITHUB_ACTION_REPOSITORY| sed 's/\//_/g' )"
           if [ "${{ github.event.inputs.k8s_namespace }}" == "default"  || "${{ github.event.inputs.k8s_namespace }}" == "" ]
           then
             NAMESPACE="$($GITHUB_ACTION_REPOSITORY| sed 's/\//_/g' )"

@@ -88,6 +88,7 @@ jobs:
       - name: Install Helm Release
         run: |
           pwd
+          ls -lart
           sed -i s+#SERVICE_NAME#+"ABHIJEET_TEST"+g ./helm_chart/values.yaml ./helm_chart/Chart.yaml
           kubectl create ns ${{ github.event.inputs.k8s_namespace }} || true
           helm upgrade --install ${{ env.REPO_NAME }} -n ${{ github.event.inputs.k8s_namespace }} helm_chart --atomic --timeout 300s --set image.repository=${{ secrets.REGISTRY_URL }} --set image.tag=${{ github.event.inputs.build_number }} --set image.registrySecret="regcred"  --set service.internalport="8080" 

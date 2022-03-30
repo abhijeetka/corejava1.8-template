@@ -26,10 +26,10 @@ jobs:
         env:
           KUBECTL_VERSION: "1.23.5"
         run: |
-          curl -LO "https://dl.k8s.io/release/${{ env.KUBECTL_VERSION }}/bin/linux/amd64/kubectl"
-          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-          kubectl --version 
-
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl
+          
+          
 #      - uses: actions-hub/kubectl@master
 #        name: Create Namespace
 #        env:

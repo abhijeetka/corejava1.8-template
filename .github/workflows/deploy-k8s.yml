@@ -43,6 +43,11 @@ jobs:
           kubectl version
           
 
+      - name: Create Namespace if not present
+        run: |
+          kubectl create namespace ${{ github.event.inputs.k8s_namespace }} || true
+
+
 #      - uses: actions-hub/kubectl@master
 #        name: Create Namespace
 #        env:

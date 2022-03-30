@@ -56,7 +56,7 @@ jobs:
       - name: Determine Kubernetes Namespace
         run: |
           NAMESPACE="$($GITHUB_ACTION_REPOSITORY| sed 's/\//_/g' )"
-          echo $NAMESPACE
+          echo $GITHUB_ACTION_REPOSITORY
           if [ "${{ github.event.inputs.k8s_namespace }}" == "default"  || "${{ github.event.inputs.k8s_namespace }}" == "" ]
           then
             NAMESPACE="$($GITHUB_ACTION_REPOSITORY| sed 's/\//_/g' )"

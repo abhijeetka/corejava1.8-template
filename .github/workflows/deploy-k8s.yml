@@ -20,6 +20,8 @@ jobs:
       url: 'https://calibo.com'
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
 #configure kubeconfig
       - name: Configure Kubeconfig File

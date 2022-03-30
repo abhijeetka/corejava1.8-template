@@ -24,15 +24,15 @@ jobs:
 # Create Namespace
       - name: Install kubectl version
         env:
-          KUBECTL_VERSION: "1.19"
+          KUBECTL_VERSION: "1.23.5-00"
         run: |
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates curl
           sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
           echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
           sudo apt-get update
-          sudo apt-get install -y kubectl
-          kubectl --version
+          sudo apt-get install -y kubectl=${{ env.KUBECTL_VERSION }}
+          kubectl version
           
 
 #      - uses: actions-hub/kubectl@master

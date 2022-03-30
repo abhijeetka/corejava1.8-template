@@ -52,6 +52,17 @@ jobs:
           ./get_helm.sh -v v${{ env.HELM_VERSION }}
           helm version
 
+# Check the Namespace if null or default then create namespace depending upon the github repository.
+      - name: Determine Kubernetes Namespace
+        run: |
+          if [${{ github.event.inputs.k8s_namespace }} == "default"  || ${{ github.event.inputs.k8s_namespace }} == "" ]
+          then
+            NAMESPACE=$(${{ env.GITHUB_ACTION_REPOSITORY }} | sed 's/\//_/g' )
+          fi
+          echo $NAMESPACE
+          
+          
+
 # Create namespace
       - name: Create Namespace if not present
         run: |

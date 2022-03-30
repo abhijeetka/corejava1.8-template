@@ -24,7 +24,7 @@ jobs:
 # Create Namespace
       - name: Install kubectl version
         env:
-          KUBECTL_VERSION: "1.21"
+          KUBECTL_VERSION: "1.19"
         run: |
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates curl

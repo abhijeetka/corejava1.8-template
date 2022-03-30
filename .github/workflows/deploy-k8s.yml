@@ -7,6 +7,10 @@ on:
         default: '10'
         type: string
         required: true
+      k8s_namespace:
+        default: 'default'
+        type: string
+        required: true
 
 jobs:
   deploy:
@@ -14,3 +18,32 @@ jobs:
     environment:
       name: 'dev'
       url: 'https://calibo.com'
+
+    steps:
+      - uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: create namespace ${{ github.event.inputs.k8s_namespace }}
+# study what needs to be installed
+# steps
+# check for promote
+#
+# create namespace
+# docker registry credentials
+#
+#         sed -i s+#SERVICE_NAME#+"$service"+g ./helm_chart/values.yaml ./helm_chart/Chart.yaml
+#         kubectl create ns "$namespace_name" || true
+#         helm upgrade --install "${generalPresent.repoName}" -n "$namespace_name" helm_chart --atomic --timeout 300s --set image.repository="$REGISTRY_URL" --set image.tag="$BUILD_TAG" --set image.registrySecret="regcred"  --set service.internalport="$SERVICE_PORT" -f Helm.yaml
+#         sleep 10
+#         kubectl rollout restart deploy "${generalPresent.repoName}-$service" -n "$namespace_name"
+# The below is for live URL
+#          env.temp_service_name = "$RELEASE_NAME-$service".take(63)
+#          def url = sh (returnStdout: true, script: '''kubectl get svc -n "$namespace_name" | grep "$temp_service_name" | awk '{print $4}' ''').trim()
+#          if (url != "<pending>") {
+#          print("##\$@\$ http://$url ##\$@\$")
+#          } else {
+#          currentBuild.result = 'ABORTED'
+#          error('Aborting the job as access url has not generated')
+#          }
+#          }

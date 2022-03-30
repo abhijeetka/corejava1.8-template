@@ -42,11 +42,16 @@ jobs:
           sudo apt-get install -y kubectl=${{ env.KUBECTL_VERSION }}
           kubectl version
           
-
+# Create namespace
       - name: Create Namespace if not present
         run: |
           kubectl create namespace ${{ github.event.inputs.k8s_namespace }} || true
 
+
+# Configure Docker Regsitry Credentials
+      - name: Configure Docker Registry Credentials
+        run: |
+          kubectl -n ${{ github.event.inputs.k8s_namespace }} create secret docker-registry regcred --docker-server="${{ secrets.REGISTRY_URL }}" --docker-username="${{ secrets.DOCKER_USERNAME }}" --docker-password="${{ secrets.DOCKER_PASSWORD }}" || true
 
 #      - uses: actions-hub/kubectl@master
 #        name: Create Namespace

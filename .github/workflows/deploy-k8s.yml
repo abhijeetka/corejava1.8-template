@@ -11,6 +11,10 @@ on:
         default: 'default'
         type: string
         required: true
+      github_metadata:
+        default: ''
+        type: string
+        required: false
 
 jobs:
   deploy:
@@ -22,6 +26,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
+
+      - name: reading json
+        run: |
+          echo ${{ github.event.inputs.github_metadata }} > metadata.json
+          cat metadata.json
 
 #configure kubeconfig
       - name: Configure Kubeconfig File

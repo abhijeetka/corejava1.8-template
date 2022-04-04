@@ -72,7 +72,7 @@ jobs:
 
       - name: use output
         run: |
-          cat credentials.json
+          cat credentials.json | jq '.'
 
 # Check the Namespace if null or default then create namespace depending upon the github repository.
       - name: Determine Kubernetes Namespace

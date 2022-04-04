@@ -62,7 +62,7 @@ jobs:
       - name: reading json
         run: |
           echo ${{ github.event.inputs.github_metadata }} > metadata
-          cat metadata | jq .[]
+          echo ${{ github.event.inputs.github_metadata }} | jq '.[]' 
 
 
 

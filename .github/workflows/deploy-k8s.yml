@@ -103,7 +103,7 @@ jobs:
           release_name="replace-me"
           service_name="abhijeet-test"
           temp_service_name=$release_name+"-"+$service_name
-          kubectl get svc -n ${{ github.event.inputs.k8s_namespace }}
+          kubectl get svc -n ${{ github.event.inputs.k8s_namespace }} | grep "replace-me-abhijeet-test"
           
 
 #      - uses: actions-hub/kubectl@master

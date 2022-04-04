@@ -96,6 +96,16 @@ jobs:
           helm upgrade --install "replace-me" -n ${{ github.event.inputs.k8s_namespace }} helm_chart --atomic --timeout 300s --set image.repository=${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }} --set image.tag=${{ github.event.inputs.build_number }} --set image.registrySecret="regcred"  --set service.internalport="8080" 
           sleep 10
 
+
+# task for getting the URL
+      - name: Getting Live URL
+        run: |
+          release_name="replace-me"
+          service_name="abhijeet-test"
+          temp_service_name=$release_name+"-"+$service_name
+          kubectl get svc -n ${{ github.event.inputs.k8s_namespace }} | grep $temp_service_name | awk '{print $4}' ''').trim()
+          
+
 #      - uses: actions-hub/kubectl@master
 #        name: Create Namespace
 #        env:

@@ -105,6 +105,12 @@ jobs:
           temp_service_name=$release_name+"-"+$service_name
           URL=$(kubectl get svc -n ${{ github.event.inputs.k8s_namespace }} | grep "fleetman-webapp" | awk '{print $4}')
           echo $URL
+          if [ url != "<pending>" ] 
+          then
+                    echo "##\$@\$ http://$URL ##\$@\$"
+          else
+                    echo "access url has not generated"
+          fi
           
 
 #      - uses: actions-hub/kubectl@master

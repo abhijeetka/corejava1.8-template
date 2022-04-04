@@ -27,10 +27,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: reading json
-        run: |
-          echo ${{ github.event.inputs.github_metadata }} > metadata.json
-          cat metadata.json | jq .
 
 #configure kubeconfig
       - name: Configure Kubeconfig File
@@ -50,7 +46,7 @@ jobs:
           sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
           echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
           sudo apt-get update
-          sudo apt-get install -y kubectl=${{ env.KUBECTL_VERSION }}
+          sudo apt-get install -y kubectl=${{ env.KUBECTL_VERSION }} jq
           kubectl version
 
   #Install Helm
@@ -62,6 +58,13 @@ jobs:
           chmod 700 get_helm.sh
           ./get_helm.sh -v v${{ env.HELM_VERSION }}
           helm version
+
+      - name: reading json
+        run: |
+          echo ${{ github.event.inputs.github_metadata }} > metadata.json
+          cat metadata.json | jq .
+
+
 
 # Check the Namespace if null or default then create namespace depending upon the github repository.
       - name: Determine Kubernetes Namespace

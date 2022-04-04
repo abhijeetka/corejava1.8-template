@@ -75,37 +75,35 @@ jobs:
       - name: use jemson
         run: |
           echo ${{ env.namespace }}
-          echo $GITHUB_ENV
+          
 
-# Check the Namespace if null or default then create namespace depending upon the github repository.
-      - name: Determine Kubernetes Namespace
-        run: |
-          NAMESPACE="$($GITHUB_REPOSITORY | sed 's/\//_/g' )"
-          echo $NAMESPACE
-          echo REPO_NAME=$GITHUB_REPOSITORY | sed 's/\//_/g' >> $GITHUB_ENV
-          if [ "${{ github.event.inputs.k8s_namespace }}" == "default"  || "${{ github.event.inputs.k8s_namespace }}" == "" ]
-          then
-            NAMESPACE=$GITHUB_ACTION_REPOSITORY | sed 's/\//_/g'
-          else
-            NAMESPACE="${{ github.event.inputs.k8s_namespace }}"
-          fi
-          echo $NAMESPACE
-          echo "NAMESPACE=$NAMESPACE" >> $GITHUB_ENV
-          
-          
+## Check the Namespace if null or default then create namespace depending upon the github repository.
+#      - name: Determine Kubernetes Namespace
+#        run: |
+#          NAMESPACE="$($GITHUB_REPOSITORY | sed 's/\//_/g' )"
+#          echo $NAMESPACE
+#          echo REPO_NAME=$GITHUB_REPOSITORY | sed 's/\//_/g' >> $GITHUB_ENV
+#          if [ "${{ github.event.inputs.k8s_namespace }}" == "default"  || "${{ github.event.inputs.k8s_namespace }}" == "" ]
+#          then
+#            NAMESPACE=$GITHUB_ACTION_REPOSITORY | sed 's/\//_/g'
+#          else
+#            NAMESPACE="${{ github.event.inputs.k8s_namespace }}"
+#          fi
+#          echo $NAMESPACE
+#          echo "NAMESPACE=$NAMESPACE" >> $GITHUB_ENV
+#
+#
 
 # Create namespace
       - name: Create Namespace if not present
         run: |
-          kubectl create namespace ${{ github.event.inputs.k8s_namespace }} || true
+          kubectl create namespace ${{ env.namespace }} || true
 
 
 # Configure Docker Regsitry Credentials
       - name: Configure Docker Registry Credentials
         run: |
-          kubectl -n ${{ github.event.inputs.k8s_namespace }} create secret docker-registry regcred --docker-server="${{ secrets.REGISTRY_URL }}" --docker-username="${{ secrets.DOCKER_USERNAME }}" --docker-password="${{ secrets.DOCKER_PASSWORD }}" || true
-
-
+          kubectl -n ${{ env.namespace }} create secret docker-registry regcred --docker-server="${{ secrets.REGISTRY_URL }}" --docker-username="${{ secrets.DOCKER_USERNAME }}" --docker-password="${{ secrets.DOCKER_PASSWORD }}" || true
 
 
 
@@ -115,8 +113,8 @@ jobs:
           pwd
           ls -lart
           sed -i s+#SERVICE_NAME#+"abhijeet-test"+g ./helm_chart/values.yaml ./helm_chart/Chart.yaml
-          kubectl create ns ${{ github.event.inputs.k8s_namespace }} || true
-          helm upgrade --install "replace-me" -n ${{ github.event.inputs.k8s_namespace }} helm_chart --atomic --timeout 300s --set image.repository=${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }} --set image.tag=${{ github.event.inputs.build_number }} --set image.registrySecret="regcred"  --set service.internalport="8080" 
+          kubectl create ns ${{ env.namespace }} || true
+          helm upgrade --install "replace-me" -n ${{ env.namespace }} helm_chart --atomic --timeout 300s --set image.repository=${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }} --set image.tag=${{ github.event.inputs.build_number }} --set image.registrySecret="regcred"  --set service.internalport="8080" 
           sleep 10
 
 
@@ -126,7 +124,7 @@ jobs:
           release_name="replace-me"
           service_name="abhijeet-test"
           temp_service_name=$release_name+"-"+$service_name
-          URL=$(kubectl get svc -n ${{ github.event.inputs.k8s_namespace }} | grep "fleetman-webapp" | awk '{print $4}')
+          URL=$(kubectl get svc -n ${{ env.namespace }} | grep "fleetman-webapp" | awk '{print $4}')
           echo $URL
           if [ url != "<pending>" ] 
           then

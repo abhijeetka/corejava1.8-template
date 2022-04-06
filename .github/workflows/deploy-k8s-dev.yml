@@ -1,4 +1,4 @@
-name: Deployment-k8s
+name: Deployment-k8s-dev
 
 on:
   workflow_dispatch:

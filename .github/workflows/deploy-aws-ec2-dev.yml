@@ -1,4 +1,4 @@
-name: Deployment
+name: Deployment-dev
 on:
   workflow_dispatch:
     inputs:

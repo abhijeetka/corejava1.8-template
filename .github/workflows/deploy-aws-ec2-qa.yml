@@ -1,4 +1,4 @@
-name: Deployment
+name: Deployment-qa
 on:
   workflow_dispatch:
     inputs:

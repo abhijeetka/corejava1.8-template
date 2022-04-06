@@ -1,0 +1,69 @@
+name: Deployment
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        default: '10'
+        type: string
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: 'dev'
+      url: 'https://calibo.com'
+
+    steps:
+      - name: Assign variable Repository type
+        id: registry_type
+        run: echo '::set-output name=secret::${{ secrets.REGISTRY_TYPE }}'
+
+      - name: Deploy to EC2
+        if: steps.registry_type.outputs.secret == 'AWS'
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_KEY  }}
+          HOSTNAME: ${{ secrets.MACHINE_IP  }}
+          USER_NAME: ${{ secrets.MACHINE_USERNAME  }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          REGISTRY_URL : ${{ secrets.REGISTRY_URL }}
+
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+
+            #Now we have got the access of EC2 and we will start the deploy .
+            # export access key and
+            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY}
+            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_KEY}
+            echo "Considering that we have AWS CLI already present ${ECR_REGION}"
+            echo "${{ env.ECR_REGION }}"
+            aws --version 
+            docker stop ${{ secrets.IMAGE_NAME }} || true && docker rm ${{ secrets.IMAGE_NAME }} || true
+            docker login -u AWS -p $(aws ecr get-login-password --region ${{ env.ECR_REGION }}) ${{ env.REGISTRY_URL }}
+            docker run -d -p 8080:8082 --name=${{ secrets.IMAGE_NAME }} ${{ env.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}:${{ github.event.inputs.build_number }}
+            docker ps
+          '
+
+      - name: Deploy to Azure VM
+        if: steps.registry_type.outputs.secret == 'Azure'
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_KEY  }}
+          HOSTNAME: ${{ secrets.MACHINE_IP  }}
+          USER_NAME: ${{ secrets.MACHINE_USERNAME  }}
+          REGISTRY_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          REGISTRY_USERNAME: $ {{ secrets.DOCKER_USERNAME }}
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+
+            # Considering that we have AWS CLI already present
+            echo ${{ env.REGISTRY_PASSWORD }} | docker login -u lazsa --password-stdin ${{ env.REGISTRY_URL }}
+            docker version
+            docker stop ${{ secrets.IMAGE_NAME }} || true && docker rm ${{ secrets.IMAGE_NAME }} || true
+            docker run -d -p 8080:8082 --name=${{ secrets.IMAGE_NAME }} ${{ env.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}:${{ github.event.inputs.build_number }}
+            docker ps
+          '

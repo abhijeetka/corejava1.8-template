@@ -12,8 +12,8 @@ on:
       - 'main'
   workflow_dispatch:
    inputs:
-    build_number:
-      default: '10'
+    github_general:
+      default: '{name: jdjd}'
       type: string
       required: true
    

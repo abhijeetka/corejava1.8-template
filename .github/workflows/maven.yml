@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
      PROJECT_NAME: "Github-Java-Sample"
+     ARTIFACTORY_USERNAME: "ACCC"
 
     steps:
     - run: |

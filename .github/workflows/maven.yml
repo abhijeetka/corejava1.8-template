@@ -15,13 +15,7 @@ on:
     build_number:
       default: '10'
       type: stringrequired: true
-
-inputs:
-  build_number:
-    default: '10'
-    type: string
-    required: true
-    
+   
     
 jobs:
   ci:

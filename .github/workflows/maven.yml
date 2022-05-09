@@ -6,15 +6,16 @@ name: Java CI with Maven
 on:
   push:
     branches:
-      - '**'
+      - 'main'
   pull_request:
     branches:
-      - '**'
+      - 'main'
   workflow_dispatch:
    inputs:
     build_number:
       default: '10'
-      type: stringrequired: true
+      type: string
+      required: true
    
     
 jobs:

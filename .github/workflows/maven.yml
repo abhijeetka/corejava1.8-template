@@ -24,7 +24,7 @@ jobs:
      PROJECT_NAME: "Github-Java-Sample"
 
     steps:
-    - run: echo ${{ github.event.inputs.build_number }}
+    - run: echo "buildNumber: ${{ github.event.inputs.build_number }}"
     - uses: actions/checkout@v2
     - name: Set up JDK 8
       uses: actions/setup-java@v2

@@ -14,9 +14,15 @@ on:
    inputs:
     build_number:
       default: '10'
-      type: string
-      required: true
+      type: stringrequired: true
 
+inputs:
+  build_number:
+    default: '10'
+    type: string
+    required: true
+    
+    
 jobs:
   ci:
     runs-on: ubuntu-latest

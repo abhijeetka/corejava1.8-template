@@ -27,7 +27,7 @@ jobs:
 
     steps:
     - run: |
-        echo  ${{ github.event.inputs.github_general }}
+        echo  "Env: ${{ github.event.inputs.github_general }}"
         echo "RUN_NUMBER=IMAGE_NAME" >> $GITHUB_ENV
         
     - run: |

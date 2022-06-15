@@ -26,7 +26,7 @@ jobs:
      GITHUB_GENERAL: "{name:sfsdfsdf}"
 
     steps:
-    - if:  github.event.inputs.github_general != 'EMPTY'
+    - if:  github.event_name == 'workflow_dispatch'
       run: |
         echo "GITHUB_GENERAL=${{ github.event.inputs.github_general }}" >> $GITHUB_ENV
         
@@ -34,7 +34,7 @@ jobs:
     - run: |
         echo "Trigger Type: ${{ github.event_name }}"
         echo "github environment : ${GITHUB_ENV}"
-        echo  "Env: ${{ github.event.inputs.github_general }}"
+        echo  "Env: ${{ env.GITHUB_GENERAL }}"
         echo "RUN_NUMBER=IMAGE_NAME" >> $GITHUB_ENV
         
     - run: |

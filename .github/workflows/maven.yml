@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
    inputs:
     github_general:
-      default: "EMPTY"
+      default: 'EMPTY'
       type: string
       required: true
    
@@ -26,7 +26,7 @@ jobs:
      GITHUB_GENERAL: "{name:sfsdfsdf}"
 
     steps:
-    - if:  github.event.inputs.github_general != "EMPTY"
+    - if:  github.event.inputs.github_general != 'EMPTY'
       run: |
         echo "GITHUB_GENERAL=${{ github.event.inputs.github_general }}" >> $GITHUB_ENV
         

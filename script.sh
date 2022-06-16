@@ -6,4 +6,4 @@ then
 else
     echo "$SERVICE stopped"
 fi
-echo "hello12"
+echo "hello123"

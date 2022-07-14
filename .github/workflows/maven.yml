@@ -23,7 +23,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     env:
-     GITHUB_GENERAL: "{name:sfsdfsdf}"
+     GITHUB_GENERAL: "EMPTY"
 
     steps:
     - if:  github.event_name == 'workflow_dispatch'

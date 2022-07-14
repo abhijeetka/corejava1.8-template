@@ -31,7 +31,8 @@ jobs:
         echo "GITHUB_GENERAL=${{ github.event.inputs.github_general }}" >> $GITHUB_ENV
         
         
-    - run: |
+    - name: Testing
+      run: |
         echo "Trigger Type: ${{ github.event_name }}"
         echo "github environment : ${GITHUB_ENV}"
         echo  "Env: ${{ env.GITHUB_GENERAL }}"

@@ -41,8 +41,8 @@ jobs:
 
     - name: use output
       run: |
-        echo "repo_name=$(cat github_general.json | jq -r '.repoName')" >> $GITHUB_ENV
-        echo "artifactory_type=$(cat github_general.json | jq -r '.artifactory')" >> $GITHUB_ENV
+        echo "repo_name=$(cat github_general.json | jq -r '.name')" >> $GITHUB_ENV
+        echo "artifactory_type=$(cat github_general.json | jq -r '.age')" >> $GITHUB_ENV
         echo "artifactory_username=$(cat github_general.json | jq -r '.artifactoryUsernameCredentialId')" >> $GITHUB_ENV
         echo "artifactory_password=$(cat github_general.json | jq -r '.artifactoryPasswordCredentialId')" >> $GITHUB_ENV
         echo "sonar_host=$(cat github_general.json | jq -r '.sonarHost')" >> $GITHUB_ENV

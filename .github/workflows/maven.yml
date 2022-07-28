@@ -29,7 +29,26 @@ jobs:
     - if:  github.event_name == 'workflow_dispatch'
       run: |
         echo "GITHUB_GENERAL=${{ github.event.inputs.github_general }}" >> $GITHUB_ENV
-        
+    
+     
+    # creating json file
+    - name: create-json for metadata
+      id: create-json
+      uses: jsdaniell/create-json@1.1.2
+      with:
+        name: "github_general.json"
+        json: ${{ env.GITHUB_GENERAL }}
+
+    - name: use output
+      run: |
+        echo "repo_name=$(cat github_general.json | jq -r '.repoName')" >> $GITHUB_ENV
+        echo "artifactory_type=$(cat github_general.json | jq -r '.artifactory')" >> $GITHUB_ENV
+        echo "artifactory_username=$(cat github_general.json | jq -r '.artifactoryUsernameCredentialId')" >> $GITHUB_ENV
+        echo "artifactory_password=$(cat github_general.json | jq -r '.artifactoryPasswordCredentialId')" >> $GITHUB_ENV
+        echo "sonar_host=$(cat github_general.json | jq -r '.sonarHost')" >> $GITHUB_ENV
+        echo "sonar_token=$(cat github_general.json | jq -r '.sonarTokenCredentialId')" >> $GITHUB_ENV
+        echo "repository_url=$(cat github_general.json | jq -r '.repositoryUrl')" >> $GITHUB_ENV
+        echo ${{ env.repo_name }}
         
     - name: Testing
       run: |

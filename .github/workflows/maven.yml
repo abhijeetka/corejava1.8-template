@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
    inputs:
     github_general:
-      default: 'EMPTY'
+      default: '{"name":"workflow", "age":30, "car":null}'
       type: string
       required: true
    
@@ -23,7 +23,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     env:
-     GITHUB_GENERAL: "EMPTY"
+     GITHUB_GENERAL: '{"name":"commit", "age":30, "car":null}'
 
     steps:
     - if:  github.event_name == 'workflow_dispatch'

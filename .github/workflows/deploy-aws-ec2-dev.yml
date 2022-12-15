@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: 'dev'
-      url: 'https://calibo.com'
+      url: 'https://test.com'
 
     steps:
       - name: Assign variable Repository type
@@ -61,7 +61,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
 
             # Considering that we have AWS CLI already present
-            echo ${{ env.REGISTRY_PASSWORD }} | docker login -u lazsa --password-stdin ${{ env.REGISTRY_URL }}
+            echo ${{ env.REGISTRY_PASSWORD }} | docker login -u admin --password-stdin ${{ env.REGISTRY_URL }}
             docker version
             docker stop ${{ secrets.IMAGE_NAME }} || true && docker rm ${{ secrets.IMAGE_NAME }} || true
             docker run -d -p 8080:8082 --name=${{ secrets.IMAGE_NAME }} ${{ env.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}:${{ github.event.inputs.build_number }}

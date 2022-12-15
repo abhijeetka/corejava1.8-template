@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: 'dev'
-      url: 'https://calibo.com'
+      url: 'https://test.com'
 
     steps:
       - name: Checkout Code

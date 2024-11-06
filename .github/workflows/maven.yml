@@ -98,7 +98,7 @@ jobs:
       with:
         args: >
          -Dsonar.java.binaries='.'
-         -Dsonar.exclusions='pom.xml, target/**/*'
+         -Dsonar.exclusions='pom.xml'
          -Dsonar.projectKey=$SONAR_PROJECT_KEY 
          -Dsonar.projectName=$SONAR_PROJECT_KEY 
          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} 

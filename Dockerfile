@@ -1,6 +1,7 @@
-FROM openjdk:8-jre-alpine
+FROM amazoncorretto:8-alpine
 ENV context ""
+ENV port 8021
 ADD /src/main/resources/application.properties //
-
-ADD ./target/demo-0.0.1-SNAPSHOT.jar //
-ENTRYPOINT ["java", "-jar", "/demo-0.0.1-SNAPSHOT.jar","--server.servlet.context-path=/${context}"]
+ADD /target/corejava1.8-with-maven-template-1.0-SNAPSHOT-jar-with-dependencies.jar //
+RUN mkdir /temp
+ENTRYPOINT ["java","-jar", "/corejava1.8-with-maven-template-1.0-SNAPSHOT-jar-with-dependencies.jar","--server.port=${port}"]

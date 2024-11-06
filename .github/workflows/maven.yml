@@ -93,27 +93,27 @@ jobs:
     - name: Maven Test
       run: mvn test --batch-mode
 
-    - name: Testing Sonar Scan
-      uses: SonarSource/sonarqube-scan-action@v3.0.0
-      with:
-        args: >
-         -Dsonar.java.binaries='.'
-         -Dsonar.exclusions='pom.xml'
-         -Dsonar.projectKey=$SONAR_PROJECT_KEY 
-         -Dsonar.projectName=$SONAR_PROJECT_KEY 
-         -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} 
-         -Dsonar.login=$SONAR_TOKEN  
-      env:
-         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-         SONAR_PROJECT_KEY: ${{ env.PROJECT_NAME }}      
-      
-    # - name: SonarQube Scan
-    #   run: mvn --batch-mode -V -U -e org.sonarsource.scanner.maven:sonar-maven-plugin:3.0:sonar -Dsonar.java.binaries='.' -Dsonar.exclusions='pom.xml, target/**/*' -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.projectName=$SONAR_PROJECT_KEY -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} -Dsonar.login=$SONAR_TOKEN
+    # - name: Testing Sonar Scan
+    #   uses: SonarSource/sonarqube-scan-action@v3.0.0
+    #   with:
+    #     args: >
+    #      -Dsonar.java.binaries='.'
+    #      -Dsonar.exclusions='pom.xml'
+    #      -Dsonar.projectKey=$SONAR_PROJECT_KEY 
+    #      -Dsonar.projectName=$SONAR_PROJECT_KEY 
+    #      -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} 
+    #      -Dsonar.login=$SONAR_TOKEN  
     #   env:
-    #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    #    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-    #    SONAR_PROJECT_KEY: ${{ env.PROJECT_NAME }}
+    #      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    #      SONAR_PROJECT_KEY: ${{ env.PROJECT_NAME }}      
+      
+    - name: SonarQube Scan
+      run: mvn --batch-mode -V -U -e org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.java.binaries='.' -Dsonar.exclusions='pom.xml, target/**/*' -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.projectName=$SONAR_PROJECT_KEY -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} -Dsonar.login=$SONAR_TOKEN
+      env:
+       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+       SONAR_PROJECT_KEY: ${{ env.PROJECT_NAME }}
 
  # Docker Related tasks.
 # This will work for Azure Container Registry and Jfrog as the authentication mechanism is same.

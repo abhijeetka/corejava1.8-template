@@ -109,7 +109,7 @@ jobs:
     #      SONAR_PROJECT_KEY: ${{ env.PROJECT_NAME }}      
       
     - name: SonarQube Scan
-      run: mvn --batch-mode -V -U -e org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.java.binaries='.' -Dsonar.exclusions='pom.xml, target/**/*' -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.projectName=$SONAR_PROJECT_KEY -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} -Dsonar.login=$SONAR_TOKEN
+      run: mvn sonar:sonar -Dsonar.java.binaries='.' -Dsonar.exclusions='pom.xml, target/**/*' -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.projectName=$SONAR_PROJECT_KEY -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} -Dsonar.login=$SONAR_TOKEN
       env:
        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

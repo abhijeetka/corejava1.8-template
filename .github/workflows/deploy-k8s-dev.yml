@@ -37,27 +37,37 @@ jobs:
           echo "${{ env.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
 # Install Kubectl
-      - name: Install kubectl version
-        env:
-          KUBECTL_VERSION: "1.23.5-00"
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl
-          sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-          echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-          sudo apt-get update
-          sudo apt-get install -y kubectl=${{ env.KUBECTL_VERSION }} jq
-          kubectl version
+      # - name: Install kubectl version
+      #   env:
+      #     KUBECTL_VERSION: "1.23.5-00"
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y apt-transport-https ca-certificates curl
+      #     sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      #     echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+      #     sudo apt-get update
+      #     sudo apt-get install -y kubectl=${{ env.KUBECTL_VERSION }} jq
+      #     kubectl version
+      - name: Install kubectl
+        uses: Azure/setup-kubectl@v4.0.0
+        with:
+          version: 1.28
+          
 
   #Install Helm
-      - name: Install helm
-        env:
-          HELM_VERSION: 3.8.0
-        run: |
-          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-          chmod 700 get_helm.sh
-          ./get_helm.sh -v v${{ env.HELM_VERSION }}
-          helm version
+      # - name: Install helm
+      #   env:
+      #     HELM_VERSION: 3.8.0
+      #   run: |
+      #     curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+      #     chmod 700 get_helm.sh
+      #     ./get_helm.sh -v v${{ env.HELM_VERSION }}
+      #     helm version
+      - name: Helm tool installer
+        uses: Azure/setup-helm@v3
+        with:
+          version: 3.8.0
+          
 
       - name: create-json for metadata
         id: create-json

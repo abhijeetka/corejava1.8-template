@@ -85,7 +85,8 @@ jobs:
  # Since we cannot use secrets in if conditions
     - name: Assign variable Repository type
       id: registry_type
-      run: echo '::set-output name=secret::${{ secrets.REPOSITORY_TYPE }}'
+      run: echo "secret=${{ secrets.REPOSITORY_TYPE }}" >> $GITHUB_OUTPUT
+      #run: echo '::set-output name=secret::${{ secrets.REPOSITORY_TYPE }}'
       
   # Since we need docker image name in lower case, using this funciton.
     - id: project_name

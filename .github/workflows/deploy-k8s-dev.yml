@@ -1,4 +1,4 @@
-name: Deployment-k8s-dev
+name: Deployment-k8s-dev-testing
 
 on:
   workflow_dispatch:

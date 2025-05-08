@@ -10,6 +10,12 @@ on:
   pull_request:
     branches:
       - '**'
+  workflow_dispatch:
+   inputs:
+    github_general:
+      default: '{"name":"workflow", "age":30, "car":null}'
+      type: string
+      required: true
 
 jobs:
   ci:

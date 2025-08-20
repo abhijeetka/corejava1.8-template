@@ -30,7 +30,25 @@ jobs:
       run: |
         echo "GITHUB_GENERAL=${{ github.event.inputs.github_general }}" >> $GITHUB_ENV
     
-     
+    - name: port-io
+      uses: port-labs/port-github-action@v1
+      with:
+        clientId: ${{ secrets.PORT_CLIENT_ID }}
+        clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+        baseUrl: https://api.port.io
+        operation: UPSERT
+        identifier: some_identifier
+        title: Some Title
+        blueprint: githubWorkflow
+        properties: |-
+          {
+            "path": "string",
+            "status": "active",
+            "createdAt": "2025-08-20T09:58:41.155Z",
+            "updatedAt": "2025-08-20T09:58:41.155Z",
+            "deletedAt": "2025-08-20T09:58:41.155Z",
+            "link": "https://example.com"
+          }
     # creating json file
     - name: create-json for metadata
       id: create-json
